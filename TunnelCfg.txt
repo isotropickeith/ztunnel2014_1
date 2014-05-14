@@ -1,0 +1,7 @@
+animation ParticleLetters
+	zyngaLogo.png
+endAnimation
+
+script
+	ParticleLetters	360		// 300 seconds of this animation
+endScript
