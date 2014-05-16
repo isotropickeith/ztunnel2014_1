@@ -3,8 +3,13 @@ public class ParticleLettersAni implements Animation
 	static final float sAccel = .05;  		//acceleration rate of the particles
 	static final float sMaxSpeed = 2;  		//max speed the particles can move at
 	static final int   sNearBoundry = 25;   // # pixels to goal that defines "near"
+	static final int   sNewImageTime = 60;  // load new image interval in seconds
+	AnimationResources mResources;			// AnimationResources object
 
-	PImage mWords;  					//holds the image container the words
+	String[] mFilenames;				// Array of Filenames for images to display
+	PImage   mWords;  					// holds the image container the words
+	int      mCurFileIndex = 0;			// index into mFileNames for the current image
+
 	color mBgColor = color(0);
 	color mTestColor = color(255);  	//the color we will check for in the image. Currently black
 	color mNearColor = color(255,0,0);
@@ -17,10 +22,33 @@ public class ParticleLettersAni implements Animation
 	static final int sFreePeriod = 13;  // 13 sec. preriod for free/not free states
 
 
+	//constructor
+	ParticleLettersAni(AnimationResources resources)
+	{
+		mResources = resources;
+		mFilenames = mResources.getFiles("ParticleLettersAni");
+		if(mFilenames.length == 0)
+		{
+			println("No Resources for ParticleLettersAni - FAIL");
+			exit();
+		}
+		else
+		{
+		  println("Resource files for ParticleLettersAni :");
+			for(int i = 0; i < mFilenames.length; i++)
+			{
+				println("    " + mFilenames[i]);
+			}
+		}
+	}
+
 	public void start()
 	{
 		println("ParticleLettersAni starting up.");
-		mWords = loadImage("text2.png");
+
+		mCurFileIndex = 0;
+		mWords = loadImage(mFilenames[mCurFileIndex]);
+
 		stroke(255);
 
 		//go through the image, find all black pixel and create a particle for them
@@ -47,7 +75,16 @@ public class ParticleLettersAni implements Animation
 	{
 	  if(frameCount % (5 * ZTunnel.sFps) == 0)  // every 5 s.
 	  {
-		println("ParticleLettersAni.update() at frame :" + frameCount);
+			println("ParticleLettersAni.update() at frame :" + frameCount);
+	  }
+
+	  // See if it's time to set a new image
+	  if(frameCount % (sNewImageTime * ZTunnel.sFps) == 0)  // every 5 s.
+	  {
+			print("ParticleLettersAni setting new image at frame " + frameCount);
+			mCurFileIndex = (mCurFileIndex + 1) % mFilenames.length;
+			mWords = loadImage(mFilenames[mCurFileIndex]);
+			println(": " + mFilenames[mCurFileIndex]);
 	  }
 
 	  background(mBgColor);
@@ -81,6 +118,5 @@ public class ParticleLettersAni implements Animation
 	{
   		return(x + y * width);
 	}
- 
 
 }
