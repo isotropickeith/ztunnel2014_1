@@ -3,6 +3,8 @@ import processing.data.*;
 import processing.event.*; 
 import processing.opengl.*; 
 
+import hypermedia.net.*; 
+
 import java.util.HashMap; 
 import java.util.ArrayList; 
 import java.io.File; 
@@ -42,6 +44,172 @@ public interface Animation
 {
 	public abstract void start();
 	public abstract void update();
+	public abstract String getName();
+	public abstract void stop();
+}
+public class AnimationResources
+{
+	TunnelDisplay mDisplay;
+	XML mXml;
+	XML[] mAnimationElements;
+	ArrayList<Animation> mAnimations;
+
+	//constructor
+	AnimationResources(TunnelDisplay display)
+	{
+		mDisplay = display;
+
+		mXml = loadXML("TunnelCfg.xml");
+		
+		mAnimationElements = mXml.getChildren("animation");
+
+		mAnimations = new ArrayList<Animation>();
+
+		if(mAnimationElements.length == 0)
+		{
+			println("No animations! - ERROR");
+			exit();
+		}
+		for(int i = 0; i < mAnimationElements.length; i++)
+		{
+			String aniName = mAnimationElements[i].getString("id");
+			Animation newAnimation = null;
+			println("DEBUG: Animation " + i + ": " + aniName);
+			if(aniName.equals("ParticleLettersAni"))
+			{
+				newAnimation = new ParticleLettersAni(this, mDisplay);
+			}
+			else if(aniName.equals("<<Somethin>>>"))
+			{
+				
+			}
+			else
+			{
+				println("AnimationResources::ctor Do not recognize animation " + aniName
+					       + " ERROR...");
+				exit();
+			}
+			if(newAnimation != null)
+			{
+				mAnimations.add(newAnimation);
+			}
+		}
+	}
+
+	public ArrayList getAnimations()
+	{
+		return mAnimations;
+	}
+
+	public String[] getFiles(String animationName)
+	{
+		String[] fileNames = {};
+
+		for(int i = 0; i < mAnimationElements.length; i++)
+		{
+			println("DEBUG: Animation " + i + ": " + mAnimationElements[i].getString("id"));
+			if(mAnimationElements[i].getString("id").equals(animationName))
+			{
+				XML[] files = mAnimationElements[i].getChildren("imageFile");
+				println("   #files = " + files.length);
+				for(int j = 0; j < files.length; j++)
+				{
+					String fileName = files[j].getString("name");
+					if(fileName != null)
+					{
+						fileNames = append(fileNames, fileName);
+					}
+					else
+					{
+						println("null filename in AnimationResources.getFiles()");
+					}
+				}
+			}
+		}
+		return fileNames;
+	}
+
+	public int getAnimationDuration(String animationName)
+	{
+		for(int i = 0; i < mAnimationElements.length; i++)
+		{
+			if(mAnimationElements[i].getString("id").equals(animationName))
+			{
+				int duration = mAnimationElements[i].getInt("duration", -1);
+				println("Animation " + animationName + " duration = " + duration);
+				return duration;
+			}
+		}
+		println("getAnimationDuration() can't find Animation " + animationName);
+		return -1;
+	}
+
+	public int[] getFileDurations(String animationName)
+	{
+		int[] durations = {};
+
+		for(int i = 0; i < mAnimationElements.length; i++)
+		{
+			println("DEBUG: Animation " + i + ": " + mAnimationElements[i].getString("id"));
+			if(mAnimationElements[i].getString("id").equals(animationName))
+			{
+				XML[] files = mAnimationElements[i].getChildren("imageFile");
+				println("   #files = " + files.length);
+				for(int j = 0; j < files.length; j++)
+				{
+					int duration = files[j].getInt("duration", -1);
+					durations = append(durations, duration);
+					if(duration == -1)
+					{
+						println("null duration in AnimationResources.getFileDurations()");
+					}
+				}
+			}
+		}
+		return durations;
+	}
+
+}
+public class AnimationScheduler
+{
+	AnimationResources mResources;
+	int mCurAnimationIndex;
+	int mAnimationExpires;
+
+	ArrayList<Animation> mAnimations;
+	Animation mCurAnimation;
+
+	AnimationScheduler(AnimationResources resources)
+	{
+		mResources = resources;
+		mCurAnimationIndex = 0;
+		mAnimationExpires = -1;
+
+		mAnimations = mResources.getAnimations();
+
+	}
+
+	public void start()
+	{
+		mCurAnimation = mAnimations.get(mCurAnimationIndex);
+		String animationName = mCurAnimation.getName();
+		int aniDuration = mResources.getAnimationDuration(animationName);
+		mAnimationExpires = frameCount + (aniDuration * ZTunnel.sFps);
+	}
+
+	public void update()
+	{
+		if(frameCount >= mAnimationExpires)
+		{
+			mCurAnimation.stop();
+			mCurAnimationIndex = (mCurAnimationIndex + 1) % mAnimations.size();
+			start();
+		}
+		else
+		{
+			mCurAnimation.update();
+		}
+	}
 }
 public class Particle
 {
@@ -215,8 +383,17 @@ public class ParticleLettersAni implements Animation
 	static final float sAccel = .05f;  		//acceleration rate of the particles
 	static final float sMaxSpeed = 2;  		//max speed the particles can move at
 	static final int   sNearBoundry = 25;   // # pixels to goal that defines "near"
+	static final int   sDefaultImageTime = 60;  // load new image interval in seconds
 
-	PImage mWords;  					//holds the image container the words
+	AnimationResources mResources;			// AnimationResources object
+	TunnelDisplay			 mDisplay;				// The display bject on which to paint
+
+	String[] mFilenames;				// Array of Filenames for images to display
+	int[]    mDurations;				// Array of durations for images to display
+	PImage   mWords;  					// image containing the words
+	int      mCurFileIndex = 0;			// index into mFileNames for the current image
+	int      mImageExpirationFrame;
+
 	int mBgColor = color(0);
 	int mTestColor = color(255);  	//the color we will check for in the image. Currently black
 	int mNearColor = color(255,0,0);
@@ -229,24 +406,58 @@ public class ParticleLettersAni implements Animation
 	static final int sFreePeriod = 13;  // 13 sec. preriod for free/not free states
 
 
+	//constructor
+	ParticleLettersAni(AnimationResources resources,
+										 TunnelDisplay display)
+	{
+		mResources = resources;
+		mDisplay = display;
+
+		mFilenames = mResources.getFiles("ParticleLettersAni");
+		mDurations = mResources.getFileDurations("ParticleLettersAni");
+		if(mFilenames.length == 0)
+		{
+			println("No Resources for ParticleLettersAni - FAIL");
+			exit();
+		}
+		else
+		{
+		  println("Resource files for ParticleLettersAni :");
+			for(int i = 0; i < mFilenames.length; i++)
+			{
+				println("    " + mFilenames[i] + " : " + mDurations[i] + " sec.");
+			}
+		}
+	}
+
 	public void start()
 	{
 		println("ParticleLettersAni starting up.");
-		mWords = loadImage("text2.png");
+
+		mCurFileIndex = 0;
+		mWords = loadImage(mFilenames[mCurFileIndex]);
+		if(mDurations[mCurFileIndex] != -1)
+		{
+			mImageExpirationFrame = frameCount + (mDurations[mCurFileIndex] * ZTunnel.sFps);
+		}
+		else
+		{
+			mImageExpirationFrame = frameCount + (sDefaultImageTime * ZTunnel.sFps);
+		}
+
 		stroke(255);
 
 		//go through the image, find all black pixel and create a particle for them
 		//start by drawing the background and the image to the screen
 		background(mBgColor);
-		image(mWords, 0, 0);  //draw the image to screen
-		loadPixels();  //lets us work with the pixels currently on screen
+		mWords.loadPixels();  //lets us work with the pixels currently on screen
 		  
 		//go through the entire array of pixels, creating a particle for each black pixel
 		for (int x = 0; x < width; x++)
 		{
 		    for (int y = 0; y < height; y++)
 		    {
-		      	if (pixels[GetPixel(x, y)] == mTestColor)
+		      	if (mWords.get(x, y) == mTestColor)
 		      	{
 		        	mParticles = (Particle[])append(mParticles, new Particle(x, y, sAccel));
 		      	}
@@ -257,13 +468,51 @@ public class ParticleLettersAni implements Animation
 
 	public void update()
 	{
+		background(mBgColor);
+
 	  if(frameCount % (5 * ZTunnel.sFps) == 0)  // every 5 s.
 	  {
-		println("ParticleLettersAni.update() at frame :" + frameCount);
+			println("ParticleLettersAni.update() at frame :" + frameCount);
 	  }
 
-	  background(mBgColor);
-	  
+	  // See if it's time to set a new image
+	  if(frameCount >= mImageExpirationFrame)  // every 5 s.
+	  {
+			print("ParticleLettersAni setting new image at frame " + frameCount);
+			mCurFileIndex = (mCurFileIndex + 1) % mFilenames.length;
+			mWords = loadImage(mFilenames[mCurFileIndex]);
+			println(": " + mFilenames[mCurFileIndex] + " for " + mDurations[mCurFileIndex] + " sec.");
+	  	if(mDurations[mCurFileIndex] != -1)
+			{
+				mImageExpirationFrame = frameCount + (mDurations[mCurFileIndex] * ZTunnel.sFps);
+			}
+			else
+			{
+				mImageExpirationFrame = frameCount + (sDefaultImageTime * ZTunnel.sFps);
+			}
+			stroke(255);
+
+			//go through the image, find all black pixel and create a particle for them
+			//start by drawing the background and the image to the screen
+			background(mBgColor);
+			mWords.loadPixels();  //lets us work with the pixels currently on screen
+
+			mParticles = new Particle[0];  // Delete current particles.
+
+			//go through the entire array of pixels, creating a particle for each black pixel
+			for (int x = 0; x < width; x++)
+			{
+		    for (int y = 0; y < height; y++)
+		    {
+	      	if (mWords.get(x, y) == mTestColor)
+	      	{
+	        	mParticles = (Particle[])append(mParticles, new Particle(x, y, sAccel));
+	      	}
+		    }
+			}
+			println("# particles : " + mParticles.length);
+		}
+
 	  if(frameCount % (mFreePeriod * ZTunnel.sFps) == 0)
 	  {
 	    mFree = !mFree;  // toggle free state every freePeriod seconds
@@ -286,43 +535,134 @@ public class ParticleLettersAni implements Animation
 	    }
 	    mParticles[i].draw(particleColor);
 	  }
+	  // <<<<<<<<<<<<< create a PImage from display >>>>>>>>>>>>
+	  // mDisplay.sendImage(image);
 	}
+
+	public void stop()
+	{
+		// do nothing
+	}
+
+
+	public String getName()
+	{
+		return "ParticleLettersAni";
+	}
+
 
 	//returns the locaiton in pixels[] of the point (x,y)
 	public int GetPixel(int x, int y)
 	{
   		return(x + y * width);
 	}
- 
 
 }
+
+
 public class TunnelDisplay
 {
-	
+	public static final int sBytesPerLed = 3;
+	public static final int sBytesPerStrip = ZTunnel.sLedsPerStrip * sBytesPerLed;
+
+	public static final int sNumStripsPerPacket = 16;
+	private static final int sBufSize = sBytesPerStrip * sNumStripsPerPacket + 4 + 4;  // Strip data (471*16) + 8 byte UDP header)+ 4 bytes type + 4 bytes mSeq.
+	private byte[] mBuf = new byte[sBufSize];
+
+	private final String[]sIpaddr = {"192.168.1.177",    // stripctrl0 remote IP address
+									 								 "192.168.1.178",    // stripctrl1
+									 								 "192.168.1.179",    // stripctrl2
+									 								 "192.168.1.180",    // stripctrl3
+									 								 "192.168.1.181",    // stripctrl4
+									 								 "192.168.1.182",    // stripctrl5
+									 								 "192.168.1.183",    // stripctrl6
+									 								 "192.168.1.184"};   // stripctrl7
+	private static final int sDestPort = 6000;     // the destination port
+	private static final int sSrcPort  = 6000;     // the source port
+	private long mSeq;                      // tx packet mSequence number
+	private UDP mUdp;  // define the UDP object
+
+	TunnelDisplay()
+	{
+		mSeq = 1;                      // mSeq # starts at 1
+
+   	for(int i= 0; i < sBufSize; i++) // set pattern in mBuf
+   	{ 
+     	mBuf[i] = (byte)0xFF;
+   	}
+
+   	mUdp = new UDP(this, sSrcPort);  // create a new datagram connection on port 6000
+  	//udp. log( true );            // <-- print out the connection activity
+  	print("UDP Buffer Size: ");
+  	println(UDP.BUFFER_SIZE);
+
+  	mUdp.listen(true);           // and wait for incoming message
+	}
+
+	public void sendImage(PImage image)
+	{
+		image.loadPixels();
+
+		int ipidx = 0;     // index into array of IP addresses for strip controllers
+
+	  for(int lineidx = 0; lineidx < ZTunnel.sNumStripsPerSystem; lineidx += sNumStripsPerPacket)
+	  {
+	    int pixelIdx = ZTunnel.sLedsPerStrip * lineidx;
+	  
+	    for(int i= 8; i < sBytesPerStrip * sNumStripsPerPacket + 8 - 1; i += 3) {
+	      int curPixel = image.pixels[pixelIdx];
+	      mBuf[i] = (byte) blue(curPixel);    // Blue
+	      mBuf[i+1] = (byte) green(curPixel);  // Green
+	      mBuf[i+2] = (byte) red(curPixel);  // Red
+	    
+	      pixelIdx++;
+	    }  // set pattern in mBuf
+	     // Put a type 0 in the first long to signify this is a Strip Data packet
+	    mBuf[0] = 0;  
+	    mBuf[1] = 0;
+	    mBuf[2] = 0;
+	    mBuf[3] = 0;
+	  
+	    // put a mSequence # in the next 4 bytes of mBuf (little endien)
+	    mBuf[4] = (byte)(mSeq & 0xFF);
+	    mBuf[5] = (byte)((mSeq & 0xFF00) >> 8);
+	    mBuf[6] = (byte)((mSeq & 0xFF0000) >> 16);
+	    mBuf[7] = (byte)((mSeq & 0xFF000000) >> 24);
+	    mUdp.send(mBuf, sIpaddr[ipidx++], sDestPort);    // the message to send
+	  }
+  	mSeq++;  
+
+	}
+
 }
 public class ZTunnel
 {
 	public static final int sFps = 30;  // 30 fps for this tunnel
 
 	public static final int sLedsPerStrip = 157;
-	public static final int numStripsPerSystem = 128;
+	public static final int sNumStripsPerSystem = 128;
 
-	Animation sAni1;
+	AnimationResources 	mAnimationResources;
+	AnimationScheduler 	mScheduler;
+	TunnelDisplay 	 		mTunnelDisplay;
 
 	//ctor
 	ZTunnel()
 	{
 		frameRate(sFps);
-		size(sLedsPerStrip, numStripsPerSystem);
-  		noCursor();
+		size(sLedsPerStrip, sNumStripsPerSystem);
+  	noCursor();
 
-		sAni1 = new ParticleLettersAni();
-		sAni1.start();
+  	mTunnelDisplay = new TunnelDisplay();
+  	mAnimationResources = new AnimationResources(mTunnelDisplay);
+  	mScheduler = new AnimationScheduler(mAnimationResources);
+
+		mScheduler.start();
 	}
 
 	public void update()
 	{
-		sAni1.update();
+		mScheduler.update();
 	}
 }
   static public void main(String[] passedArgs) {

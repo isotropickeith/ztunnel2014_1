@@ -5,24 +5,26 @@ public class ZTunnel
 	public static final int sLedsPerStrip = 157;
 	public static final int sNumStripsPerSystem = 128;
 
-	Animation mAni1;
-	AnimationResources mAnimationResources;
+	AnimationResources 	mAnimationResources;
+	AnimationScheduler 	mScheduler;
+	TunnelDisplay 	 		mTunnelDisplay;
 
 	//ctor
 	ZTunnel()
 	{
 		frameRate(sFps);
 		size(sLedsPerStrip, sNumStripsPerSystem);
-  		noCursor();
+  	noCursor();
 
-  		mAnimationResources = new AnimationResources();
+  	mTunnelDisplay = new TunnelDisplay();
+  	mAnimationResources = new AnimationResources(mTunnelDisplay);
+  	mScheduler = new AnimationScheduler(mAnimationResources);
 
-		mAni1 = new ParticleLettersAni(mAnimationResources);
-		mAni1.start();
+		mScheduler.start();
 	}
 
 	public void update()
 	{
-		mAni1.update();
+		mScheduler.update();
 	}
 }
