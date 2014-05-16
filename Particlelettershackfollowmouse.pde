@@ -32,7 +32,7 @@ color testColor=color(255);  //the color we will check for in the image. Current
 color nearColor = color(255,0,0);
 color farColor = color(255,255,255);
 
-void start()
+public void start()
 {
   frameRate(fps);
    Goal = new PVector((random(width)),(random(height)));
@@ -62,7 +62,7 @@ void start()
   println("# particles : " + particles.length);
 }
 
-void Update(){
+public void Update(){
   background(bgColor);
   
   if(frameCount % (freePeriod * fps) == 0)

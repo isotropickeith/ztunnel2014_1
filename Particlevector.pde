@@ -44,10 +44,10 @@ class Particlevector{
   else{
     CheckEdge();
      // Our algorithm for calculating acceleration:
-    PVector mouse = new PVector(mouseX,mouseY);
+    PVector mouse = new PVector((width/2),(height/2));
     PVector dir = PVector.sub(mouse,location);  // Find vector pointing towards mouse
     dir.normalize();     // Normalize
-    dir.mult(0.1);       // Scale 
+    dir.mult(0.2);       // Scale 
     acceleration = dir;  // Set to acceleration
 
     // Motion 101!  Velocity changes by acceleration.  Location changes by velocity.
