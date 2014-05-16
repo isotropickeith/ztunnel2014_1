@@ -5,7 +5,8 @@ public class ZTunnel
 	public static final int sLedsPerStrip = 157;
 	public static final int numStripsPerSystem = 128;
 
-	Animation sAni1;
+	//Animation sAni1;
+Animation smouse
 
 	//ctor
 	ZTunnel()
@@ -14,12 +15,15 @@ public class ZTunnel
 		size(sLedsPerStrip, numStripsPerSystem);
   		noCursor();
 
-		sAni1 = new ParticleLettersAni();
-		sAni1.start();
+		//sAni1 = new ParticleLettersAni();
+		smouse = new Particlelettershackfollowmouse();
+		//sAni1.start();
+		smouse.start();
 	}
 
 	public void update()
 	{
-		sAni1.update();
+		//sAni1.update();
+		smouse.update();
 	}
 }
