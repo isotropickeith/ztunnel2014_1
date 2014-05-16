@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<TunnelCfg>
+	<animation id="ParticleLettersAni">
+		<imageFile>zyngaLogo.png</imageFile>
+	</animation>
+</TunnelCfg>
