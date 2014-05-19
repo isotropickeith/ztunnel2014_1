@@ -46,7 +46,7 @@ public class Particle
   }
  
  //deals with the frame to frame changes of the particle
- void update(boolean  isFree)
+ public void update(boolean  isFree)
  {
    //println(degrees(ang));
    mX += mXVel;
@@ -101,16 +101,31 @@ public class Particle
  
 
  //draws the particle on screen
- void draw(color particleColor)
+ public void draw(color particleColor)
  {
     stroke(particleColor);
 
     point(mX, mY);
  }
 
+ 
+public boolean isNear(int distance)
+{
+  if(abs(mX - mXGoal) < distance &&
+     abs(mY - mYGoal) < distance)
+  {
+    return true;
+  }
+  else
+  {
+    return false;  
+  }
+}
+
+
 
   
- void checkEdge()
+ private void checkEdge()
  {
    if (mX > width || mX < 0 || mY > height || mY < 0)
    {
@@ -139,19 +154,6 @@ public class Particle
    }
  }
    
-
- boolean isNear(int distance)
- {
-    if(abs(mX - mXGoal) < distance &&
-       abs(mY - mYGoal) < distance)
-    {
-      return true;
-    }
-    else
-    {
-      return false;  
-    }
- }
    
    /*
    if (x>width || x<0){

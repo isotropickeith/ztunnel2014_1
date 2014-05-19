@@ -30,9 +30,9 @@ public class AnimationResources
 			{
 				newAnimation = new ParticleLettersAni(this, mDisplay);
 			}
-			else if(aniName.equals("<<Somethin>>>"))
+			else if(aniName.equals("OrbitAni"))
 			{
-				
+				newAnimation = new OrbitAni(this, mDisplay);
 			}
 			else
 			{

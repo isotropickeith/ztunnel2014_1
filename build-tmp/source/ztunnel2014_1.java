@@ -79,9 +79,9 @@ public class AnimationResources
 			{
 				newAnimation = new ParticleLettersAni(this, mDisplay);
 			}
-			else if(aniName.equals("<<Somethin>>>"))
+			else if(aniName.equals("OrbitAni"))
 			{
-				
+				newAnimation = new OrbitAni(this, mDisplay);
 			}
 			else
 			{
@@ -211,6 +211,303 @@ public class AnimationScheduler
 		}
 	}
 }
+/* OpenProcessing Tweak of *@*http://www.openprocessing.org/sketch/34101*@* */
+/* !do not delete the line above, required for linking your tweak if you upload again */
+/* Andy Wallace
+ * Particle Letters
+ * 2010
+ *
+ * Click to have the particles form the word
+ */
+public class OrbitAni implements Animation
+{
+  static final float sAccel = .05f;      //acceleration rate of the particles
+  static final float sMaxSpeed = 2;     //max speed the particles can move at
+  static final int   sNearBoundry = 25;   // # pixels to goal that defines "near"
+  static final int   sDefaultImageTime = 60;  // load new image interval in seconds
+
+  AnimationResources mResources;      // AnimationResources object
+  TunnelDisplay      mDisplay;        // The display bject on which to paint
+
+  String[] mFilenames;        // Array of Filenames for images to display
+  int[]    mDurations;        // Array of durations for images to display
+  PImage   mWords;            // image containing the words
+  int      mCurFileIndex = 0;     // index into mFileNames for the current image
+  int      mImageExpirationFrame;
+
+  int mBgColor = color(0);
+  int mTestColor = color(255);    //the color we will check for in the image. Currently black
+  int mNearColor = color(255,0,0);
+  int mFarColor = color(255,255,255);
+
+  Particlevector[] mParticles = new Particlevector[0];
+  boolean mFree = true;  //when this becomes false, the particles move toward their goals
+  int mFreePeriod = 13;  // 13 sec. preriod for free/not free states
+
+  static final int sFreePeriod = 13;  // 13 sec. preriod for free/not free states
+
+
+  //constructor
+  OrbitAni(AnimationResources resources,
+           TunnelDisplay display)
+  {
+    mResources = resources;
+    mDisplay = display;
+
+    mFilenames = mResources.getFiles("OrbitAni");
+    mDurations = mResources.getFileDurations("OrbitAni");
+    if(mFilenames.length == 0)
+    {
+      println("No Resources for OrbitAni - FAIL");
+      exit();
+    }
+    else
+    {
+      println("Resource files for OrbitAni :");
+      for(int i = 0; i < mFilenames.length; i++)
+      {
+        println("    " + mFilenames[i] + " : " + mDurations[i] + " sec.");
+      }
+    }
+  }
+
+  public void start()
+  {
+    println("OrbitAni starting up.");
+
+    mCurFileIndex = 0;
+    mWords = loadImage(mFilenames[mCurFileIndex]);
+    if(mDurations[mCurFileIndex] != -1)
+    {
+      mImageExpirationFrame = frameCount + (mDurations[mCurFileIndex] * ZTunnel.sFps);
+    }
+    else
+    {
+      mImageExpirationFrame = frameCount + (sDefaultImageTime * ZTunnel.sFps);
+    }
+
+    stroke(255);
+
+    //go through the image, find all black pixel and create a particle for them
+    //start by drawing the background and the image to the screen
+    background(mBgColor);
+    mWords.loadPixels();  //lets us work with the pixels currently on screen
+      
+    //go through the entire array of pixels, creating a particle for each black pixel
+    for (int x = 0; x < width; x++)
+    {
+        for (int y = 0; y < height; y++)
+        {
+            if (mWords.get(x, y) == mTestColor)
+            {
+              mParticles = (Particlevector[])append(mParticles, new Particlevector(x, y, sAccel));
+            }
+        }
+    }
+    println("# particles : " + mParticles.length);
+  }
+
+  public void update()
+  {
+    background(mBgColor);
+
+    if(frameCount % (5 * ZTunnel.sFps) == 0)  // every 5 s.
+    {
+      println("OrbitAni.update() at frame :" + frameCount);
+    }
+
+    // See if it's time to set a new image
+    if(frameCount >= mImageExpirationFrame)  // every 5 s.
+    {
+      print("OrbitAni setting new image at frame " + frameCount);
+      mCurFileIndex = (mCurFileIndex + 1) % mFilenames.length;
+      mWords = loadImage(mFilenames[mCurFileIndex]);
+      println(": " + mFilenames[mCurFileIndex] + " for " + mDurations[mCurFileIndex] + " sec.");
+      if(mDurations[mCurFileIndex] != -1)
+      {
+        mImageExpirationFrame = frameCount + (mDurations[mCurFileIndex] * ZTunnel.sFps);
+      }
+      else
+      {
+        mImageExpirationFrame = frameCount + (sDefaultImageTime * ZTunnel.sFps);
+      }
+      stroke(255);
+
+      //go through the image, find all black pixel and create a particle for them
+      //start by drawing the background and the image to the screen
+      background(mBgColor);
+      mWords.loadPixels();  //lets us work with the pixels currently on screen
+
+      mParticles = new Particlevector[0];  // Delete current particles.
+
+      //go through the entire array of pixels, creating a particle for each black pixel
+      for (int x = 0; x < width; x++)
+      {
+        for (int y = 0; y < height; y++)
+        {
+          if (mWords.get(x, y) == mTestColor)
+          {
+            mParticles = (Particlevector[])append(mParticles, new Particlevector(x, y, sAccel));
+          }
+        }
+      }
+      println("# particles : " + mParticles.length);
+    }
+
+    if(frameCount % (mFreePeriod * ZTunnel.sFps) == 0)
+    {
+      mFree = !mFree;  // toggle free state every freePeriod seconds
+    }
+    
+    for (int i = 0; i < mParticles.length; i++){
+      if (mParticles[i].getY() < 0)
+      {
+        //println("TOO FUCKNG HIGH");
+      }
+      // Update particle position
+      mParticles[i].update(mFree);
+
+      // Draw the particles
+      int particleColor = mFarColor;
+
+      if(!mFree && mParticles[i].isNear(sNearBoundry))
+      {
+        particleColor = mNearColor;
+      }
+      mParticles[i].draw(particleColor);
+    }
+    // <<<<<<<<<<<<< create a PImage from display >>>>>>>>>>>>
+    // mDisplay.sendImage(image);
+  }
+
+  public void stop()
+  {
+    // do nothing
+  }
+
+
+  public String getName()
+  {
+    return "OrbitAni";
+  }
+
+
+  //returns the locaiton in pixels[] of the point (x,y)
+  public int GetPixel(int x, int y)
+  {
+      return(x + y * width);
+  }
+
+}
+
+/*<<<<<<<<<<<<<<< OLd >>>>>>>>>>>>> 
+public class ParticleVectorLettersHackFollowMouse implements Animation
+{
+  AnimationResources mResources;      // AnimationResources object
+  TunnelDisplay      mDisplay;        // The display bject on which to paint
+
+  String[] mFilenames;        // Array of Filenames for images to display
+  int[]    mDurations;        // Array of durations for images to display
+  PImage   mWords;            // image containing the words
+  int      mCurFileIndex = 0;     // index into mFileNames for the current image
+  int      mImageExpirationFrame;
+
+  Particlevector[] mParticles;
+  boolean mFree;  //when this becomes false, the particles move toward their goals
+  PVector mLocation;
+  PVector mVelocity;
+  PVector mAcceleration;
+  PVector mGoal;
+  //int x;
+  //int y;
+
+
+  int freePeriod = 20;  // 13 sec. preriod for free/not free states
+  float pAccel=.05;
+
+  //PVector pAccel = PVector.sub(Goal, location);
+
+  //float pAccel=.05;  //acceleration rate of the particles
+  float pMaxSpeed=2;  //max speed the particles can move at
+
+  color bgColor=color(0);
+
+  PImage words;  //holds the image container the words
+  color testColor=color(255);  //the color we will check for in the image. Currently black
+
+  color nearColor = color(255,0,0);
+  color farColor = color(255,255,255);
+
+  ParticleVectorLettersHackFollowMouse(AnimationResources resources,
+                                       TunnelDisplay display)
+  {
+    mResources = resources;
+    mDisplay = display;
+
+    mParticles = new Particlevector[0];
+    mFree = true;
+  }
+
+  public void start()
+  {
+     mGoal = new PVector((random(width)), (random(height)));
+    //location = new PVector(x, y);
+   // pAccel.normalize();
+  //pAccel.mult(.05);
+
+    words=loadImage("text2.png");
+    size(157,128);
+    noCursor();
+    stroke(255);
+    
+    //go through the image, find all black pixel and create a particle for them
+    //start by drawing the background and the image to the screen
+    background(bgColor);
+    image(words,0,0);  //draw the image to screen
+    loadPixels();  //lets us work with the pixels currently on screen
+    
+    //go through the entire array of pixels, creating a particle for each black pixel
+    for (int x=0; x<width; x++){
+      for (int y=0; y<height; y++){
+        if (pixels[GetPixel(x,y)] == testColor){
+          particles=(Particlevector[])append(particles, new Particlevector(x, y));
+        }
+      }
+    }
+    println("# particles : " + particles.length);
+  }
+
+  public void Update(){
+    background(bgColor);
+    
+    if(frameCount % (freePeriod * fps) == 0)
+    {
+      free = !free;  // toggle free state every freePeriod seconds
+    }
+    
+    for (int i=0; i<particles.length; i++){
+      if (particles[i].location.y<0){
+       
+      }
+      particles[i].Update();
+    }
+    //saveFrame("pic/edu-####.png");
+  }
+
+
+  //void mousePressed(){
+    //free=true;
+  //}
+  //void mouseReleased(){
+    //free=false;
+  //}
+
+  //returns the locaiton in pixels[] of the point (x,y)
+  int GetPixel(int x, int y) {
+    return(x+y*width);
+  }
+ 
+} */
 public class Particle
 {
   float mXGoal;   //the point that the particle wants to return to
@@ -321,9 +618,24 @@ public class Particle
     point(mX, mY);
  }
 
+ 
+public boolean isNear(int distance)
+{
+  if(abs(mX - mXGoal) < distance &&
+     abs(mY - mYGoal) < distance)
+  {
+    return true;
+  }
+  else
+  {
+    return false;  
+  }
+}
+
+
 
   
- public void checkEdge()
+ private void checkEdge()
  {
    if (mX > width || mX < 0 || mY > height || mY < 0)
    {
@@ -352,19 +664,6 @@ public class Particle
    }
  }
    
-
- public boolean isNear(int distance)
- {
-    if(abs(mX - mXGoal) < distance &&
-       abs(mY - mYGoal) < distance)
-    {
-      return true;
-    }
-    else
-    {
-      return false;  
-    }
- }
    
    /*
    if (x>width || x<0){
@@ -558,6 +857,142 @@ public class ParticleLettersAni implements Animation
 	}
 
 }
+class Particlevector{
+  PVector mLocation;
+  PVector mVelocity;
+  PVector mAcceleration;
+  PVector mGoal;
+  float mAccel;
+
+  float mR;
+  float mAngle;
+  float mTopspeed;
+  //float maxforce;    // Maximum steering force
+  //float maxspeed;  
+  
+  Particlevector(float newXGoal,
+                 float newYGoal,
+                 float accel)
+  {
+    mAcceleration =new PVector(0, 0);
+    mAngle = random(TWO_PI);
+    mVelocity = new PVector(cos(mAngle), sin(mAngle));
+    mLocation = new PVector((random(width)),(random(height)));
+ 
+    mAccel = accel;
+    mR = 0.1f;
+    mTopspeed = 3;
+    //maxspeed = 1.1;
+    //maxforce = 0.03;
+    
+   mGoal = new PVector(newXGoal, newYGoal);
+
+  }
+
+  public float getX()
+  {
+    return mLocation.x;
+  }
+ 
+  public float getY()
+  {
+    return mLocation.y;
+  }
+ 
+
+  
+  public void update(boolean  isFree)
+  {
+    mLocation.add(mVelocity);
+    mVelocity.add(mAcceleration);
+
+    if (!isFree)
+    {
+      mAngle = atan2(mGoal.y - mLocation.y, mGoal.x - mLocation.x);
+      mAcceleration.x = mAccel * cos(mAngle);
+      mAcceleration.y = mAccel * sin(mAngle);
+    
+      if (abs(mLocation.x - mGoal.x) < mVelocity.x * 3 ||
+          abs(mLocation.y - mGoal.y) < mVelocity.y * 3)
+      {
+        mVelocity.x *= 0.8f;
+        mVelocity.y *= 0.8f;
+      }
+    }
+    else
+    {
+      checkEdge();
+       // Our algorithm for calculating acceleration:
+      PVector mouse = new PVector((width/2), (height/2));
+      PVector dir = PVector.sub(mouse, mLocation);  // Find vector pointing towards mouse
+      dir.normalize();      // Normalize
+      dir.mult(0.2f);        // Scale 
+      mAcceleration = dir;  // Set to acceleration
+
+      // Motion 101!  Velocity changes by acceleration.  Location changes by velocity.
+      mVelocity.add(mAcceleration);
+      mVelocity.limit(mTopspeed);
+      mLocation.add(mVelocity);
+    }
+  }
+
+   //draws the particle on screen
+   public void draw(int particleColor)
+   {
+      stroke(particleColor);
+
+      point(mLocation.x, mLocation.y);
+   }
+
+  public boolean isNear(int distance)
+  {
+    if (abs(mLocation.x - mGoal.x) < distance &&
+        abs(mLocation.y - mGoal.y) < distance)
+    {
+      return true;
+    }
+    else
+    {
+      return false;  
+    }
+  }
+
+  private void checkEdge()
+  {
+    if (mLocation.x > width  || mLocation.x < 0 ||
+        mLocation.y > height || mLocation.y < 0)
+    {
+      mVelocity.x = 0;
+      mVelocity.y = 0;
+
+      if(mLocation.y > height)
+      {
+        mAcceleration.y *= -1;
+        mLocation.y = height - 1;
+      }
+      else if (mLocation.y < 0)
+      {
+        mAcceleration.y *= -1;
+        mLocation.y = 1;
+      }
+      else if (mLocation.x > width)
+      {
+        mAcceleration.x *= -1;
+        mLocation.x = width - 1;
+      }
+      else if (mLocation.x < 0)
+      {
+        mAcceleration.x *= -1;
+        mLocation.x = 1;
+      }
+    }
+  }
+
+
+}
+      
+      
+  
 
 
 public class TunnelDisplay
@@ -635,6 +1070,7 @@ public class TunnelDisplay
 	}
 
 }
+
 public class ZTunnel
 {
 	public static final int sFps = 30;  // 30 fps for this tunnel

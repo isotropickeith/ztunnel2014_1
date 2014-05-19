@@ -3,20 +3,10 @@
 	<animation id="ParticleLettersAni"
 		       duration="180">
 		<imageFile name="zyngaLogo.png"
-				   duration="60">
+				   duration="30">
 		</imageFile>
 		<imageFile name="led.png"
 				   duration="30">
-		</imageFile>
-		<imageFile name="tri.png"
-				   duration="20">
-		</imageFile>
-	</animation>
-	
-	<animation id="OrbitAni"
-		       duration="240">
-		<imageFile name="zyngaLogo.png"
-				   duration="120">
 		</imageFile>
 		<imageFile name="tri.png"
 				   duration="20">

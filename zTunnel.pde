@@ -8,7 +8,6 @@ public class ZTunnel
 	AnimationResources 	mAnimationResources;
 	AnimationScheduler 	mScheduler;
 	TunnelDisplay 	 		mTunnelDisplay;
-	AnimationResources  mAnimationResources;
 
 	//ctor
 	ZTunnel()
