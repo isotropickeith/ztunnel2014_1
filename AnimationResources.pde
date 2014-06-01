@@ -34,6 +34,10 @@ public class AnimationResources
 			{
 				newAnimation = new OrbitAni(this, mDisplay);
 			}
+			else if(aniName.equals("FlockingParticlesAni"))
+			{
+				newAnimation = new FlockingParticlesAni(this, mDisplay);
+			}
 			else
 			{
 				println("AnimationResources::ctor Do not recognize animation " + aniName

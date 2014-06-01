@@ -30,8 +30,8 @@ public class Bird{
   
   
   
-  public void run(ArrayList <Particle> particles){
-      flock(particles);
+  public void run(ArrayList <Bird> birds){
+      flock(birds);
       Update();
       borders();
       render();
@@ -42,10 +42,10 @@ public class Bird{
     }
     
     
- public   void flock(ArrayList<Particle> particles) {
-      PVector sep = separate(particles);
-      PVector ali = align(particles);
-      PVector coh = cohesion(particles);
+ public   void flock(ArrayList<Bird> birds) {
+      PVector sep = separate(birds);
+      PVector ali = align(birds);
+      PVector coh = cohesion(birds);
       
       sep.mult(se);
       ali.mult(al);
@@ -81,12 +81,12 @@ public class Bird{
     if (location.y > height+r) location.y = -r;
   }
   
-  PVector separate (ArrayList<Particle> particles) {
+  PVector separate (ArrayList<Bird> birds) {
     float desiredseparation = 25.0f;
     PVector steer = new PVector(0, 0, 0);
     int count = 0;
     
-    for (Particle other : particles) {
+    for (Bird other : birds) {
       float d = PVector.dist(location, other.location);
       
       if ((d> 0) && (d < desiredseparation)) {
@@ -113,11 +113,11 @@ public class Bird{
     return steer;
   }
   
-  PVector align (ArrayList<Particle> particles) {
+  PVector align (ArrayList<Bird> birds) {
     float neighbordist = 50;
     PVector sum = new PVector(0, 0);
     int count = 0;
-    for (Particle other : particles) {
+    for (Bird other : birds) {
       float d = PVector.dist(location, other.location);
       if ((d > 0) && (d < neighbordist)) {
         sum.add(other.velocity);
@@ -139,11 +139,11 @@ public class Bird{
       }
     }
     
-    PVector cohesion (ArrayList<Particle> particles) {
+    PVector cohesion (ArrayList<Bird> birds) {
       float neighbordist = 50;
       PVector sum = new PVector (0, 0);
       int count= 0;
-      for (Particle other : particles) {
+      for (Bird other : birds) {
         float d = PVector.dist(location, other.location);
         if ((d > 0) && (d < neighbordist)) {
           sum.add(other.location);
@@ -168,7 +168,7 @@ public class Bird{
     location.add(velocity);
     velocity.add(acceleration);
 
-    if (!free){
+    if (!isFree){
      angle = atan2(Goal.y-location.y, Goal.x-location.x);
      acceleration.x=pAccel*cos(angle);
      acceleration.y=pAccel*sin(angle);
@@ -191,7 +191,7 @@ public class Bird{
       se = 0.8;
      al = 1.0;
      co = 0.92;
-    //run(particles);    
+    //run(birds);    
     velocity.add(acceleration);
     velocity.limit(maxspeed);
     location.add(velocity);
@@ -203,7 +203,7 @@ public class Bird{
   Draw();
   }
  public void Draw(){
-  if(free)
+  if(isFree)
   {
     stroke(farColor);
   }

@@ -1,4 +1,4 @@
-`public class ParticleLettersAni implements Animation
+public class ParticleLettersAni implements Animation
 {
 	static final float sAccel = .05;  		//acceleration rate of the particles
 	static final float sMaxSpeed = 2;  		//max speed the particles can move at
