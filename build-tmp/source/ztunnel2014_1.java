@@ -7,7 +7,6 @@ import hypermedia.net.*;
 
 import java.util.HashMap; 
 import java.util.ArrayList; 
-import java.io.File; 
 import java.io.BufferedReader; 
 import java.io.PrintWriter; 
 import java.io.InputStream; 
@@ -82,6 +81,10 @@ public class AnimationResources
 			else if(aniName.equals("OrbitAni"))
 			{
 				newAnimation = new OrbitAni(this, mDisplay);
+			}
+			else if(aniName.equals("FlockingParticlesAni"))
+			{
+				newAnimation = new FlockingParticlesAni(this, mDisplay);
 			}
 			else
 			{
@@ -211,6 +214,580 @@ public class AnimationScheduler
 		}
 	}
 }
+public class Bird{
+  float x, y;
+  PVector location;
+  PVector velocity;
+  PVector acceleration;
+  PVector Goal;
+  float r;
+  float angle;
+  float maxforce;    // Maximum steering force
+  float maxspeed;  
+  float se = 0.8f;
+  float al = 1.0f;
+  float co = 0.92f;
+  
+  Bird(float x, float y){
+    acceleration =new PVector(0, 0);
+    float angle = random(TWO_PI);
+    velocity = new PVector(cos(angle), sin(angle));
+    
+    location = new PVector((random(width)),(random(height)));
+ 
+    r = 0.1f;
+    maxspeed = 1.1f;
+    maxforce = 0.03f;
+    
+    //Goal = new PVector((random(width)),(random(height)));
+   Goal = new PVector(x, y);
+
+  }
+  
+  
+  
+  public void run(ArrayList <Bird> birds){
+      flock(birds);
+      Update();
+      borders();
+      render();
+    }
+    
+  public  void applyForce(PVector force) {
+      acceleration.add(force);
+    }
+    
+    
+ public   void flock(ArrayList<Bird> birds) {
+      PVector sep = separate(birds);
+      PVector ali = align(birds);
+      PVector coh = cohesion(birds);
+      
+      sep.mult(se);
+      ali.mult(al);
+      coh.mult(co);
+      
+      applyForce(sep);
+      applyForce(ali);
+      applyForce(coh);
+    }
+    
+    
+    
+    
+    
+ public   PVector seek(PVector target) {
+      PVector desired = PVector.sub(target, location);
+      desired.normalize();
+      desired.mult(maxspeed);
+      
+      PVector steer = PVector.sub(desired, velocity);
+      steer.limit(maxforce);
+      return steer;
+    }
+    
+ public   void render(){
+      point(location.x, location.y);
+    }
+      
+      public void borders() {
+    if (location.x < -r) location.x = width+r;
+    if (location.y < -r) location.y = height+r;
+    if (location.x > width+r) location.x = -r;
+    if (location.y > height+r) location.y = -r;
+  }
+  
+  public PVector separate (ArrayList<Bird> birds) {
+    float desiredseparation = 25.0f;
+    PVector steer = new PVector(0, 0, 0);
+    int count = 0;
+    
+    for (Bird other : birds) {
+      float d = PVector.dist(location, other.location);
+      
+      if ((d> 0) && (d < desiredseparation)) {
+        
+        PVector diff = PVector.sub(location, other.location);
+        diff.normalize();
+        diff.div(d);
+        steer.add(diff);
+        count++;
+      }
+    }
+    
+    if (count > 0) {
+      steer.div((float)count);
+    }
+    
+    if (steer.mag() > 0) {
+      
+      steer.normalize();
+      steer.mult(maxspeed);
+      steer.sub(velocity);
+      steer.limit(maxforce);
+    }
+    return steer;
+  }
+  
+  public PVector align (ArrayList<Bird> birds) {
+    float neighbordist = 50;
+    PVector sum = new PVector(0, 0);
+    int count = 0;
+    for (Bird other : birds) {
+      float d = PVector.dist(location, other.location);
+      if ((d > 0) && (d < neighbordist)) {
+        sum.add(other.velocity);
+        count++;
+      }
+    }
+        
+        if (count > 0) {
+        sum.div((float)count);
+        
+        sum.normalize();
+        sum.mult(maxspeed);
+        PVector steer = PVector.sub(sum, velocity);
+        steer.limit(maxforce);
+        return steer;
+      }
+      else {
+        return new PVector(0, 0);
+      }
+    }
+    
+    public PVector cohesion (ArrayList<Bird> birds) {
+      float neighbordist = 50;
+      PVector sum = new PVector (0, 0);
+      int count= 0;
+      for (Bird other : birds) {
+        float d = PVector.dist(location, other.location);
+        if ((d > 0) && (d < neighbordist)) {
+          sum.add(other.location);
+          count++;
+        }
+      }
+      if (count > 0) {
+        sum.div(count);
+        return seek(sum);
+      }
+      else {
+        return new PVector(0, 0);
+      }
+    }
+  
+  
+  
+  
+  
+  
+ public void Update(){
+    location.add(velocity);
+    velocity.add(acceleration);
+
+    if (!isFree){
+     angle = atan2(Goal.y-location.y, Goal.x-location.x);
+     acceleration.x=pAccel*cos(angle);
+     acceleration.y=pAccel*sin(angle);
+     se = 0.8f;
+     al = 1.0f;
+     co = 0.92f;
+     
+     se = 0;
+     al = 0;
+     co = 0;
+     CheckEdge();
+    
+    if (abs(location.x - Goal.x) <velocity.x*3 || abs(location.y-Goal.y) <velocity.y*3){
+      velocity.x*=0.8f;
+      velocity.y*=0.8f;
+    }
+  }
+  else{
+   // CheckEdge();
+      se = 0.8f;
+     al = 1.0f;
+     co = 0.92f;
+    //run(birds);    
+    velocity.add(acceleration);
+    velocity.limit(maxspeed);
+    location.add(velocity);
+
+    acceleration.mult(0);
+    
+  }
+  
+  Draw();
+  }
+ public void Draw(){
+  if(isFree)
+  {
+    stroke(farColor);
+  }
+  else
+  {
+    if (abs(location.x - Goal.x) < 10 && abs(location.y-Goal.y) < 10)
+    {
+      stroke(nearColor);
+    }
+    else
+    {
+      stroke(farColor);
+    }
+  }
+  point (location.x, location.y);
+}
+
+private void CheckEdge(){
+  
+  if (location.x>width || location.x<0 || location.y>height || location.y<0){
+    velocity.x = 0;
+    velocity.y = 0;
+    if(location.y>height){
+      acceleration.y*=-1;
+      location.y=height-1;
+    }else if (location.y<0){
+      acceleration.y*=-1;
+      location.y=1;
+    }else if (location.x>width){
+      acceleration.x*=-1;
+      location.x=width-1;
+    }else if (location.x<0){
+      acceleration.x*=-1;
+      location.x=1;
+    }
+  }
+}
+
+  }    
+      
+  
+class Flock {
+  ArrayList<Particle> particles; // An ArrayList for all the boids
+
+  Flock() {
+    particles = new ArrayList<Particle>(); // Initialize the ArrayList
+  }
+  
+  public ArrayList<Particle> getFlock()
+  {
+    return particles;
+  }
+
+  public void run() {
+    for (Particle b : particles) {
+      b.run(particles);  // Passing the entire list of boids to each boid individually
+    }
+  }
+
+  public void addParticle(Particle b) {
+    particles.add(b);
+     
+  }
+
+}
+/* OpenProcessing Tweak of *@*http://www.openprocessing.org/sketch/34101*@* */
+/* !do not delete the line above, required for linking your tweak if you upload again */
+/* Andy Wallace
+ * Particle Letters
+ * 2010
+ *
+ * Click to have the particles form the word
+ */
+
+/* OpenProcessing Tweak of *@*http://www.openprocessing.org/sketch/34101*@* */
+/* !do not delete the line above, required for linking your tweak if you upload again */
+/* Andy Wallace
+ * Particle Letters
+ * 2010
+ *
+ * Click to have the particles form the word
+ */
+Flock flock;
+
+public class FlockingParticlesAni implements Animation
+{
+  static final float sAccel = .05f;      //acceleration rate of the particles
+  static final float sMaxSpeed = 2;     //max speed the particles can move at
+  static final int   sNearBoundry = 25;   // # pixels to goal that defines "near"
+  static final int   sDefaultImageTime = 60;  // load new image interval in seconds
+
+  AnimationResources mResources;      // AnimationResources object
+  TunnelDisplay      mDisplay;        // The display bject on which to paint
+
+  String[] mFilenames;        // Array of Filenames for images to display
+  int[]    mDurations;        // Array of durations for images to display
+  PImage   mWords;            // image containing the words
+  int      mCurFileIndex = 0;     // index into mFileNames for the current image
+  int      mImageExpirationFrame;
+
+  int mBgColor = color(0);
+  int mTestColor = color(255);    //the color we will check for in the image. Currently black
+  int mNearColor = color(255,0,0);
+  int mFarColor = color(255,255,255);
+
+  Particlevector[] mBirds = new Particlevector[0];
+  boolean mFree = true;  //when this becomes false, the particles move toward their goals
+  int mFreePeriod = 13;  // 13 sec. preriod for free/not free states
+
+  static final int sFreePeriod = 13;  // 13 sec. preriod for free/not free states
+
+//flock = new Flock();
+
+  //constructor
+  FlockingParticlesAni(AnimationResources resources,
+           TunnelDisplay display)
+  {
+    mResources = resources;
+    mDisplay = display;
+
+    mFilenames = mResources.getFiles("FlockingParticlesAni");
+    mDurations = mResources.getFileDurations("FlockingParticlesAni");
+    if(mFilenames.length == 0)
+    {
+      println("No Resources for FlockingParticlesAni - FAIL");
+      exit();
+    }
+    else
+    {
+      println("Resource files for FlockingParticlesAni :");
+      for(int i = 0; i < mFilenames.length; i++)
+      {
+        println("    " + mFilenames[i] + " : " + mDurations[i] + " sec.");
+      }
+    }
+  }
+
+  public void start()
+  {
+
+    
+flock = new Flock();
+    println("FlockingParticlesAni starting up.");
+
+    mCurFileIndex = 0;
+    mWords = loadImage(mFilenames[mCurFileIndex]);
+    if(mDurations[mCurFileIndex] != -1)
+    {
+      mImageExpirationFrame = frameCount + (mDurations[mCurFileIndex] * ZTunnel.sFps);
+    }
+    else
+    {
+      mImageExpirationFrame = frameCount + (sDefaultImageTime * ZTunnel.sFps);
+    }
+
+    stroke(255);
+
+    //go through the image, find all black pixel and create a particle for them
+    //start by drawing the background and the image to the screen
+    background(mBgColor);
+    mWords.loadPixels();  //lets us work with the pixels currently on screen
+      
+    //go through the entire array of pixels, creating a particle for each black pixel
+    for (int x = 0; x < width; x++)
+    {
+        for (int y = 0; y < height; y++)
+        {
+            if (mWords.get(x, y) == mTestColor)
+            {
+              mBirds = (Bird[])append(mBirds, new Bird(x, y, sAccel));
+            }
+        }
+    }
+    println("# birds : " + mBirds.length);
+  }
+
+  public void update()
+  {
+    background(mBgColor);
+
+    if(frameCount % (5 * ZTunnel.sFps) == 0)  // every 5 s.
+    {
+      println("FlockingParticlesAni.update() at frame :" + frameCount);
+    }
+
+    // See if it's time to set a new image
+    if(frameCount >= mImageExpirationFrame)  // every 5 s.
+    {
+      print("FlockingParticlesAni setting new image at frame " + frameCount);
+      mCurFileIndex = (mCurFileIndex + 1) % mFilenames.length;
+      mWords = loadImage(mFilenames[mCurFileIndex]);
+      println(": " + mFilenames[mCurFileIndex] + " for " + mDurations[mCurFileIndex] + " sec.");
+      if(mDurations[mCurFileIndex] != -1)
+      {
+        mImageExpirationFrame = frameCount + (mDurations[mCurFileIndex] * ZTunnel.sFps);
+      }
+      else
+      {
+        mImageExpirationFrame = frameCount + (sDefaultImageTime * ZTunnel.sFps);
+      }
+      stroke(255);
+
+      //go through the image, find all black pixel and create a particle for them
+      //start by drawing the background and the image to the screen
+      background(mBgColor);
+      mWords.loadPixels();  //lets us work with the pixels currently on screen
+      
+      mBirds = new Bird[0];  // Delete current particles.
+
+      //go through the entire array of pixels, creating a particle for each black pixel
+      for (int x = 0; x < width; x++)
+      {
+        for (int y = 0; y < height; y++)
+        {
+          if (mWords.get(x, y) == mTestColor)
+          Bird p = new Bird(x, y);
+          {
+            //mBirds = (Bird[])append(mBirds, new Bird(x, y, sAccel));
+            flock.addParticle(p);
+          }
+        }
+      }
+      println("# birds : " + mBirds.length);
+    }
+
+     flock.run();
+
+    if(frameCount % (mFreePeriod * ZTunnel.sFps) == 0)
+    {
+      mFree = !mFree;  // toggle free state every freePeriod seconds
+    }
+
+    /*for (int i = 0; i < mBirds.length; i++){
+      if (mBirds[i].getY() < 0)
+      {
+        //println("TOO FUCKNG HIGH");
+      }
+      // Update particle position
+      mBirds[i].update(mFree);
+
+      // Draw the particles
+      color birdColor = mFarColor;
+
+      if(!mFree && mBirds[i].isNear(sNearBoundry))
+      {
+        birdColor = mNearColor;
+      }
+      mBirds[i].draw(particleColor);
+    }*/
+    // <<<<<<<<<<<<< create a PImage from display >>>>>>>>>>>>
+    // mDisplay.sendImage(image);
+  }
+
+  public void stop()
+  {
+    // do nothing
+  }
+
+
+  public String getName()
+  {
+    return "FlockingParticlesAni";
+  }
+
+
+  //returns the locaiton in pixels[] of the point (x,y)
+  public int GetPixel(int x, int y)
+  {
+      return(x + y * width);
+  }
+
+}
+
+/*
+
+ Flock flock;
+ 
+//Particle[] particles=new Particle[0];
+boolean free=true;  //when this becomes false, the particles move toward their goals
+  PVector location;
+  PVector velocity;
+  PVector acceleration;
+  PVector Goal;
+  //int x;
+  //int y;
+int freePeriod = 20;  // 13 sec. preriod for free/not free states
+int fps = 30;         // framerate
+float pAccel=.05;
+
+//PVector pAccel = PVector.sub(Goal, location);
+
+//float pAccel=.05;  //acceleration rate of the particles
+float pMaxSpeed=2;  //max speed the particles can move at
+
+color bgColor=color(0);
+
+PImage words;  //holds the image container the words
+color testColor=color(255);  //the color we will check for in the image. Currently black
+
+color nearColor = color(255,0,0);
+color farColor = color(255,255,255);
+
+void setup()
+{
+  frameRate(fps);
+   Goal = new PVector((random(width)),(random(height)));
+  //location = new PVector(x, y);
+ // pAccel.normalize();
+//pAccel.mult(.05);
+
+  words=loadImage("dog.png");
+  size(157,128);
+  noCursor();
+  stroke(255);
+  
+  flock = new Flock();
+
+  
+  //go through the image, find all black pixel and create a particle for them
+  //start by drawing the background and the image to the screen
+  background(bgColor);
+  image(words,0,0);  //draw the image to screen
+  loadPixels();  //lets us work with the pixels currently on screen
+  
+  //go through the entire array of pixels, creating a particle for each black pixel
+  for (int x=0; x<width; x++){
+    for (int y=0; y<height; y++){
+      if (pixels[GetPixel(x,y)] == testColor){
+        Particle p = new Particle(x, y);
+        //particles=(Particle[])append(particles, p);
+        flock.addParticle(p);
+      }
+    }
+  }
+  println("# particles : " + flock.getFlock().size());
+}
+
+void draw(){
+  background(bgColor);
+ flock.run();
+  if(frameCount % (freePeriod * fps) == 0)
+  {
+    free = !free;  // toggle free state every freePeriod seconds
+  }
+  
+  //for (int i=0; i<particles.length; i++){
+  //  if (particles[i].location.y<0){
+  //   
+   // }
+   // particles[i].Update(flock.getFlock());
+  //}
+  //saveFrame("pic/edu-####.png");
+}
+
+
+void mousePressed(){
+  free=false;
+}
+void mouseReleased(){
+  free=true;
+}
+
+//returns the locaiton in pixels[] of the point (x,y)
+int GetPixel(int x, int y) {
+  return(x+y*width);
+}
+ 
+ */
 /* OpenProcessing Tweak of *@*http://www.openprocessing.org/sketch/34101*@* */
 /* !do not delete the line above, required for linking your tweak if you upload again */
 /* Andy Wallace
