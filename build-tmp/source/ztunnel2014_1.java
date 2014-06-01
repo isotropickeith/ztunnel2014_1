@@ -376,8 +376,8 @@ public class OrbitAni implements Animation
       }
       mParticles[i].draw(particleColor);
     }
-    // <<<<<<<<<<<<< create a PImage from display >>>>>>>>>>>>
-    // mDisplay.sendImage(image);
+    // Send the screen image to the Tunnel for display
+    mDisplay.sendImage();
   }
 
   public void stop()
@@ -399,115 +399,6 @@ public class OrbitAni implements Animation
   }
 
 }
-
-/*<<<<<<<<<<<<<<< OLd >>>>>>>>>>>>> 
-public class ParticleVectorLettersHackFollowMouse implements Animation
-{
-  AnimationResources mResources;      // AnimationResources object
-  TunnelDisplay      mDisplay;        // The display bject on which to paint
-
-  String[] mFilenames;        // Array of Filenames for images to display
-  int[]    mDurations;        // Array of durations for images to display
-  PImage   mWords;            // image containing the words
-  int      mCurFileIndex = 0;     // index into mFileNames for the current image
-  int      mImageExpirationFrame;
-
-  Particlevector[] mParticles;
-  boolean mFree;  //when this becomes false, the particles move toward their goals
-  PVector mLocation;
-  PVector mVelocity;
-  PVector mAcceleration;
-  PVector mGoal;
-  //int x;
-  //int y;
-
-
-  int freePeriod = 20;  // 13 sec. preriod for free/not free states
-  float pAccel=.05;
-
-  //PVector pAccel = PVector.sub(Goal, location);
-
-  //float pAccel=.05;  //acceleration rate of the particles
-  float pMaxSpeed=2;  //max speed the particles can move at
-
-  color bgColor=color(0);
-
-  PImage words;  //holds the image container the words
-  color testColor=color(255);  //the color we will check for in the image. Currently black
-
-  color nearColor = color(255,0,0);
-  color farColor = color(255,255,255);
-
-  ParticleVectorLettersHackFollowMouse(AnimationResources resources,
-                                       TunnelDisplay display)
-  {
-    mResources = resources;
-    mDisplay = display;
-
-    mParticles = new Particlevector[0];
-    mFree = true;
-  }
-
-  public void start()
-  {
-     mGoal = new PVector((random(width)), (random(height)));
-    //location = new PVector(x, y);
-   // pAccel.normalize();
-  //pAccel.mult(.05);
-
-    words=loadImage("text2.png");
-    size(157,128);
-    noCursor();
-    stroke(255);
-    
-    //go through the image, find all black pixel and create a particle for them
-    //start by drawing the background and the image to the screen
-    background(bgColor);
-    image(words,0,0);  //draw the image to screen
-    loadPixels();  //lets us work with the pixels currently on screen
-    
-    //go through the entire array of pixels, creating a particle for each black pixel
-    for (int x=0; x<width; x++){
-      for (int y=0; y<height; y++){
-        if (pixels[GetPixel(x,y)] == testColor){
-          particles=(Particlevector[])append(particles, new Particlevector(x, y));
-        }
-      }
-    }
-    println("# particles : " + particles.length);
-  }
-
-  public void Update(){
-    background(bgColor);
-    
-    if(frameCount % (freePeriod * fps) == 0)
-    {
-      free = !free;  // toggle free state every freePeriod seconds
-    }
-    
-    for (int i=0; i<particles.length; i++){
-      if (particles[i].location.y<0){
-       
-      }
-      particles[i].Update();
-    }
-    //saveFrame("pic/edu-####.png");
-  }
-
-
-  //void mousePressed(){
-    //free=true;
-  //}
-  //void mouseReleased(){
-    //free=false;
-  //}
-
-  //returns the locaiton in pixels[] of the point (x,y)
-  int GetPixel(int x, int y) {
-    return(x+y*width);
-  }
- 
-} */
 public class Particle
 {
   float mXGoal;   //the point that the particle wants to return to
@@ -834,8 +725,8 @@ public class ParticleLettersAni implements Animation
 	    }
 	    mParticles[i].draw(particleColor);
 	  }
-	  // <<<<<<<<<<<<< create a PImage from display >>>>>>>>>>>>
-	  // mDisplay.sendImage(image);
+    // Send the screen image to the Tunnel for display
+    mDisplay.sendImage();
 	}
 
 	public void stop()
@@ -1067,6 +958,45 @@ public class TunnelDisplay
 	  }
   	mSeq++;  
 
+	}
+
+	public void sendImage()
+	{
+		loadPixels();
+
+		int ipidx = 0;     // index into array of IP addresses for strip controllers
+
+	  for(int lineidx = 0;
+	  	  lineidx < ZTunnel.sNumStripsPerSystem;
+	  	  lineidx += sNumStripsPerPacket)
+	  {
+	    int pixelIdx = ZTunnel.sLedsPerStrip * lineidx;
+	  
+	    for(int i= 8;
+	    	  i < sBytesPerStrip * sNumStripsPerPacket + 8 - 1;
+	    	  i += 3)
+	    {
+	      int curPixel = pixels[pixelIdx];
+	      mBuf[i] = (byte) blue(curPixel);    // Blue
+	      mBuf[i+1] = (byte) green(curPixel);  // Green
+	      mBuf[i+2] = (byte) red(curPixel);  // Red
+	    
+	      pixelIdx++;
+	    }  // set pattern in mBuf
+	     // Put a type 0 in the first long to signify this is a Strip Data packet
+	    mBuf[0] = 0;  
+	    mBuf[1] = 0;
+	    mBuf[2] = 0;
+	    mBuf[3] = 0;
+	  
+	    // put a mSequence # in the next 4 bytes of mBuf (little endien)
+	    mBuf[4] = (byte)(mSeq & 0xFF);
+	    mBuf[5] = (byte)((mSeq & 0xFF00) >> 8);
+	    mBuf[6] = (byte)((mSeq & 0xFF0000) >> 16);
+	    mBuf[7] = (byte)((mSeq & 0xFF000000) >> 24);
+	    mUdp.send(mBuf, sIpaddr[ipidx++], sDestPort);    // the message to send
+	  }
+  	mSeq++;  
 	}
 
 }

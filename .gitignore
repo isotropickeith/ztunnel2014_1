@@ -14,3 +14,7 @@ build-tmp/ztunnel2014_1$ZTunnel.class
 *.class
 
 build-tmp/ztunnel2014_1.class
+
+*.class
+
+*.java

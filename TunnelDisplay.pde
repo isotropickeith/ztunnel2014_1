@@ -74,4 +74,43 @@ public class TunnelDisplay
 
 	}
 
+	public void sendImage()
+	{
+		loadPixels();
+
+		int ipidx = 0;     // index into array of IP addresses for strip controllers
+
+	  for(int lineidx = 0;
+	  	  lineidx < ZTunnel.sNumStripsPerSystem;
+	  	  lineidx += sNumStripsPerPacket)
+	  {
+	    int pixelIdx = ZTunnel.sLedsPerStrip * lineidx;
+	  
+	    for(int i= 8;
+	    	  i < sBytesPerStrip * sNumStripsPerPacket + 8 - 1;
+	    	  i += 3)
+	    {
+	      color curPixel = pixels[pixelIdx];
+	      mBuf[i] = (byte) blue(curPixel);    // Blue
+	      mBuf[i+1] = (byte) green(curPixel);  // Green
+	      mBuf[i+2] = (byte) red(curPixel);  // Red
+	    
+	      pixelIdx++;
+	    }  // set pattern in mBuf
+	     // Put a type 0 in the first long to signify this is a Strip Data packet
+	    mBuf[0] = 0;  
+	    mBuf[1] = 0;
+	    mBuf[2] = 0;
+	    mBuf[3] = 0;
+	  
+	    // put a mSequence # in the next 4 bytes of mBuf (little endien)
+	    mBuf[4] = (byte)(mSeq & 0xFF);
+	    mBuf[5] = (byte)((mSeq & 0xFF00) >> 8);
+	    mBuf[6] = (byte)((mSeq & 0xFF0000) >> 16);
+	    mBuf[7] = (byte)((mSeq & 0xFF000000) >> 24);
+	    mUdp.send(mBuf, sIpaddr[ipidx++], sDestPort);    // the message to send
+	  }
+  	mSeq++;  
+	}
+
 }

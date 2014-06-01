@@ -155,8 +155,8 @@ public class ParticleLettersAni implements Animation
 	    }
 	    mParticles[i].draw(particleColor);
 	  }
-	  // <<<<<<<<<<<<< create a PImage from display >>>>>>>>>>>>
-	  // mDisplay.sendImage(image);
+    // Send the screen image to the Tunnel for display
+    mDisplay.sendImage();
 	}
 
 	public void stop()
