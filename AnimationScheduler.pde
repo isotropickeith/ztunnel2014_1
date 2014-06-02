@@ -23,6 +23,7 @@ public class AnimationScheduler
 		String animationName = mCurAnimation.getName();
 		int aniDuration = mResources.getAnimationDuration(animationName);
 		mAnimationExpires = frameCount + (aniDuration * ZTunnel.sFps);
+		mCurAnimation.start();
 	}
 
 	public void update()

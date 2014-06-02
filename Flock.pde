@@ -1,24 +1,28 @@
-class Flock {
-  ArrayList<Particle> particles; // An ArrayList for all the boids
+class Flock
+{
+  ArrayList<Bird> particles; // An ArrayList for all the boids
 
-  Flock() {
-    particles = new ArrayList<Particle>(); // Initialize the ArrayList
+  Flock()
+  {
+    particles = new ArrayList<Bird>(); // Initialize the ArrayList
   }
   
-  ArrayList<Particle> getFlock()
+  ArrayList<Bird> getFlock()
   {
     return particles;
   }
 
-  void run() {
-    for (Particle b : particles) {
-      b.run(particles);  // Passing the entire list of boids to each boid individually
+  void run(boolean isFree)
+  {
+    for (Bird b : particles)
+    {
+      b.run(particles, isFree);  // Passing the entire list of boids to each boid individually
     }
   }
 
-  void addParticle(Particle b) {
+  void addParticle(Bird b)
+  {
     particles.add(b);
-     
   }
 
 }
