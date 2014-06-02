@@ -221,6 +221,7 @@ public class Bird
     }
     else
     {
+      borders();
      //checkEdge();
       se = 0.8;
       al = 1.0;

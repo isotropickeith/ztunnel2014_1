@@ -15,6 +15,8 @@
  *
  * Click to have the particles form the word
  */
+ Flock flock;
+
 
 public class FlockingParticlesAni implements Animation
 {
@@ -38,7 +40,7 @@ public class FlockingParticlesAni implements Animation
   color mNearColor = color(255,0,0);
   color mFarColor = color(255,255,255);
 
-  Bird[] mBirds = new Bird[0];
+  //Bird[] mBirds = new Bird[0];
   Flock mFlock;
   boolean mFree = true;  //when this becomes false, the particles move toward their goals
   int mFreePeriod = 13;  // 13 sec. preriod for free/not free states
@@ -104,12 +106,16 @@ public class FlockingParticlesAni implements Animation
         for (int y = 0; y < height; y++)
         {
             if (mWords.get(x, y) == mTestColor)
+             //if (mWords[GetPixel(x,y)] == mTestColor)
             {
-              mBirds = (Bird[])append(mBirds, new Bird(x, y, sAccel));
+              Bird p = new Bird(x, y, sAccel);
+              mFlock.addBird(p);
+              //mBirds = (Bird[])append(mBirds, new Bird(x, y, sAccel));
             }
         }
     }
-    println("# birds : " + mBirds.length);
+    //println("# birds : " + m.length);
+    //println("# particles : " + flock.getFlock().size());
   }
 
   public void update()
@@ -143,7 +149,7 @@ public class FlockingParticlesAni implements Animation
       background(mBgColor);
       mWords.loadPixels();  //lets us work with the pixels currently on screen
       
-      mBirds = new Bird[0];  // Delete current particles.
+      //mBirds = new Bird[0];  // Delete current particles.
 
       //go through the entire array of pixels, creating a particle for each black pixel
       for (int x = 0; x < width; x++)
@@ -154,11 +160,12 @@ public class FlockingParticlesAni implements Animation
           {
             Bird p = new Bird(x, y, sAccel);
             //mBirds = (Bird[])append(mBirds, new Bird(x, y, sAccel));
-            mFlock.addParticle(p);
+            mFlock.addBird(p);
           }
         }
       }
-      println("# birds : " + mBirds.length);
+      //println("# birds : " + mBirds.length);
+      println("# particles : " + flock.getFlock().size());
     }
 
      mFlock.run(mFree);
@@ -168,24 +175,24 @@ public class FlockingParticlesAni implements Animation
       mFree = !mFree;  // toggle free state every freePeriod seconds
     }
 
-    for (int i = 0; i < mBirds.length; i++)
-    {
-      if (mBirds[i].getY() < 0)
-      {
+    //for (int i = 0; i < mBirds.length; i++)
+    //{
+      //if (mBirds[i].getY() < 0)
+      //{
         //println("TOO FUCKNG HIGH");
-      }
+      //}
       // Update particle position
-      mBirds[i].update(mFree);
+      //mBirds[i].update(mFree);
 
       // Draw the particles
-      color birdColor = mFarColor;
+      //color birdColor = mFarColor;
 
-      if(!mFree && mBirds[i].isNear(sNearBoundry))
-      {
-        birdColor = mNearColor;
-      }
-      mBirds[i].draw(birdColor);
-    }
+      //if(!mFree && mBirds[i].isNear(sNearBoundry))
+      //{
+        //birdColor = mNearColor;
+      //}
+      //mBirds[i].draw(birdColor);
+    //}
     mDisplay.sendImage();
   }
 
