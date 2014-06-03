@@ -175,24 +175,25 @@ public class FlockingParticlesAni implements Animation
       mFree = !mFree;  // toggle free state every freePeriod seconds
     }
 
-    //for (int i = 0; i < mBirds.length; i++)
-    //{
-      //if (mBirds[i].getY() < 0)
-      //{
+    for (int i = 0; i < mFlock.getFlock().size(); i++)
+    {
+      Bird bird = mFlock.getFlock().get(i);
+      if (bird.getY() < 0)
+      {
         //println("TOO FUCKNG HIGH");
-      //}
+      }
       // Update particle position
-      //mBirds[i].update(mFree);
+      bird.update(mFree);
 
       // Draw the particles
-      //color birdColor = mFarColor;
+      color birdColor = mFarColor;
 
-      //if(!mFree && mBirds[i].isNear(sNearBoundry))
-      //{
-        //birdColor = mNearColor;
-      //}
-      //mBirds[i].draw(birdColor);
-    //}
+      if(!mFree && bird.isNear(sNearBoundry))
+      {
+        birdColor = mNearColor;
+      }
+      bird.draw(birdColor);
+    }
     mDisplay.sendImage();
   }
 

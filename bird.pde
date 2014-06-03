@@ -53,7 +53,6 @@ public class Bird
     flock(birds);
     update(isFree);
     borders();
-    render();
   }
     
   public void applyForce(PVector force)
@@ -92,11 +91,6 @@ public class Bird
     return steer;
   }
     
-  public void render()
-  {
-    point(location.x, location.y);
-  }
-      
   void borders()
   {
     if (location.x < -r) location.x = width + r;
