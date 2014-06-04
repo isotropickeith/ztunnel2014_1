@@ -8,9 +8,10 @@ public class ZTunnel
 	AnimationResources 	mAnimationResources;
 	AnimationScheduler 	mScheduler;
 	TunnelDisplay 	 		mTunnelDisplay;
+	TunnelSense         mTunnelSense;
 
 	//ctor
-	ZTunnel()
+	ZTunnel(PApplet context)
 	{
 		frameRate(sFps);
 		size(sLedsPerStrip, sNumStripsPerSystem);
@@ -19,12 +20,14 @@ public class ZTunnel
   	mTunnelDisplay = new TunnelDisplay();
   	mAnimationResources = new AnimationResources(mTunnelDisplay);
   	mScheduler = new AnimationScheduler(mAnimationResources);
+  	mTunnelSense = new TunnelSense(context, this);
 
 		mScheduler.start();
 	}
 
 	public void update()
 	{
+		mTunnelSense.update();
 		mScheduler.update();
 	}
 }
