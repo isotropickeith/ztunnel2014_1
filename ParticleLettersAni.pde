@@ -7,12 +7,14 @@ public class ParticleLettersAni implements Animation
 
 	AnimationResources mResources;			// AnimationResources object
 	TunnelDisplay			 mDisplay;				// The display bject on which to paint
+	TunnelSense				 mSense;          // Sensors in the tunnel
 
 	String[] mFilenames;				// Array of Filenames for images to display
 	int[]    mDurations;				// Array of durations for images to display
 	PImage   mWords;  					// image containing the words
 	int      mCurFileIndex = 0;			// index into mFileNames for the current image
 	int      mImageExpirationFrame;
+	int      mStateChangeExpirationFrame = 0;
 
 	color mBgColor = color(0);
 	color mTestColor = color(255);  	//the color we will check for in the image. Currently black
@@ -22,16 +24,19 @@ public class ParticleLettersAni implements Animation
 	Particle[] mParticles = new Particle[0];
 	boolean mFree = true;  //when this becomes false, the particles move toward their goals
 	int mFreePeriod = 13;  // 13 sec. preriod for free/not free states
+	int mNumUsers = 0;     // Assume 0 peeps in tunnel to start
 
 	static final int sFreePeriod = 13;  // 13 sec. preriod for free/not free states
 
 
 	//constructor
 	ParticleLettersAni(AnimationResources resources,
-										 TunnelDisplay display)
+										 TunnelDisplay      display,
+										 TunnelSense        sense)
 	{
 		mResources = resources;
 		mDisplay = display;
+		mSense = sense;
 
 		mFilenames = mResources.getFiles("ParticleLettersAni");
 		mDurations = mResources.getFileDurations("ParticleLettersAni");
@@ -84,6 +89,18 @@ public class ParticleLettersAni implements Animation
 		    }
 		}
 		println("# particles : " + mParticles.length);
+
+		// Determine our starting state free or not and whether we can use TunnelSense
+		mFree = true;
+		if(mSense.isEnabled())
+		{
+			mNumUsers = mSense.getNumUsers();
+			if(mNumUsers > 0)
+			{
+				mFree = false;
+			}
+		}
+		mStateChangeExpirationFrame = frameCount + (mFreePeriod * ZTunnel.sFps);
 	}
 
 	public void update()
@@ -133,11 +150,29 @@ public class ParticleLettersAni implements Animation
 			println("# particles : " + mParticles.length);
 		}
 
-	  if(frameCount % (mFreePeriod * ZTunnel.sFps) == 0)
-	  {
-	    mFree = !mFree;  // toggle free state every freePeriod seconds
-	  }
-	  
+		if(frameCount >= mStateChangeExpirationFrame)
+		{
+			if(mSense.isEnabled())
+			{
+				int newUserCount = mSense.getNumUsers();
+				if(mNumUsers != newUserCount)
+				{
+					if(newUserCount == 0 || mNumUsers == 0)
+					{
+						mFree = !mFree;
+						mStateChangeExpirationFrame = frameCount + (mFreePeriod * ZTunnel.sFps);
+						println("Free state change - # users = " + newUserCount);
+					}
+					mNumUsers = newUserCount;
+				}
+			}
+			else   // No tunnel sense, timer only
+			{
+				mFree = !mFree;
+				mStateChangeExpirationFrame = frameCount + (mFreePeriod * ZTunnel.sFps);
+			}
+		}
+
 	  for (int i = 0; i < mParticles.length; i++){
 	    if (mParticles[i].getY() < 0)
 	    {

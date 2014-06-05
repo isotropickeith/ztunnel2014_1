@@ -18,9 +18,9 @@ public class ZTunnel
   	noCursor();
 
   	mTunnelDisplay = new TunnelDisplay();
-  	mAnimationResources = new AnimationResources(mTunnelDisplay);
-  	mScheduler = new AnimationScheduler(mAnimationResources);
   	mTunnelSense = new TunnelSense(context, this);
+  	mAnimationResources = new AnimationResources(mTunnelDisplay, mTunnelSense);
+  	mScheduler = new AnimationScheduler(mAnimationResources);
 
 		mScheduler.start();
 	}

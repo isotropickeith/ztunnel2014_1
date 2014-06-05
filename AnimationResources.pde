@@ -1,14 +1,17 @@
 public class AnimationResources
 {
 	TunnelDisplay mDisplay;
+	TunnelSense mSense;
 	XML mXml;
 	XML[] mAnimationElements;
 	ArrayList<Animation> mAnimations;
 
 	//constructor
-	AnimationResources(TunnelDisplay display)
+	AnimationResources(TunnelDisplay display,
+										 TunnelSense   sense)
 	{
 		mDisplay = display;
+		mSense = sense;
 
 		mXml = loadXML("TunnelCfg.xml");
 		
@@ -28,7 +31,7 @@ public class AnimationResources
 			println("DEBUG: Animation " + i + ": " + aniName);
 			if(aniName.equals("ParticleLettersAni"))
 			{
-				newAnimation = new ParticleLettersAni(this, mDisplay);
+				newAnimation = new ParticleLettersAni(this, mDisplay, mSense);
 			}
 			else if(aniName.equals("OrbitAni"))
 			{
