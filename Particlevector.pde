@@ -1,3 +1,4 @@
+
 class Particlevector{
   PVector mLocation;
   PVector mVelocity;
@@ -40,7 +41,10 @@ class Particlevector{
     return mLocation.y;
   }
  
+//public float getPoint() {
+  //return freshx;
 
+//}
   
   public void update(boolean  isFree)
   {
@@ -62,9 +66,11 @@ class Particlevector{
     }
     else
     {
+//println("locationx : " + p);
+
       checkEdge();
        // Our algorithm for calculating acceleration:
-      PVector mouse = new PVector((width/2), (height/2));
+      PVector mouse = new PVector(freshx, freshy);
       PVector dir = PVector.sub(mouse, mLocation);  // Find vector pointing towards mouse
       dir.normalize();      // Normalize
       dir.mult(0.2);        // Scale 

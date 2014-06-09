@@ -5,7 +5,24 @@
  * 2010
  *
  * Click to have the particles form the word
+
  */
+
+
+ float beginX = 50.0;  // Initial x-coordinate
+float beginY = 50.0;  // Initial y-coordinate
+float endX = 75;   // Final x-coordinate
+float endY = 60;   // Final y-coordinate
+float distX;          // X-axis distance to move
+float distY;          // Y-axis distance to move
+float exponent = 4;   // Determines the curve
+float freshx = 0;        // Current x-coordinate
+float freshy = 0;        // Current y-coordinate
+float step = 0.01;    // Size of each step along the path
+float pct = 0.0;      // Percentage traveled (0.0 to 1.0)
+int fps = 30; 
+ 
+
 public class OrbitAni implements Animation
 {
   static final float sAccel = .05;      //acceleration rate of the particles
@@ -62,6 +79,8 @@ public class OrbitAni implements Animation
   {
     println("OrbitAni starting up.");
 
+    
+
     mCurFileIndex = 0;
     mWords = loadImage(mFilenames[mCurFileIndex]);
     if(mDurations[mCurFileIndex] != -1)
@@ -96,6 +115,9 @@ public class OrbitAni implements Animation
 
   public void update()
   {
+
+    Ghost();
+    
     background(mBgColor);
 
     if(frameCount % (5 * ZTunnel.sFps) == 0)  // every 5 s.
@@ -166,6 +188,34 @@ public class OrbitAni implements Animation
     // Send the screen image to the Tunnel for display
     mDisplay.sendImage();
   }
+
+
+ public void Ghost(){
+ // fill(0, 2);
+  //rect(0, 0, width, height);
+  pct += step;
+  if (pct < 1.0) {
+    freshx = beginX + (pct * distX);
+    freshy = beginY + (pow(pct, exponent) * distY);
+  }
+  //fill(255);
+  //ellipse(x, y, 20, 20);
+  
+  if(frameCount % (3 * fps) == 0){
+    pct = 0.0;
+  beginX = freshx;
+  beginY = freshy;
+  endX = random(0, width);
+  endY = random(0, height);
+  distX = endX - beginX;
+  distY = endY - beginY;
+  }
+  println("locationx : " + freshx);
+  println("locationy : " + freshy);
+  
+
+}
+      
 
   public void stop()
   {
