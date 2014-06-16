@@ -122,7 +122,7 @@ public class FlockingParticlesAni implements Animation
     println("# birds : " + mFlock.getFlock().size());
     //println("# birds : " + m.length);
     //println("# particles : " + flock.getFlock().size());
-    
+
     // Determine our starting state free or not and whether we can use TunnelSense
     mFree = true;
     if(mSense.isEnabled())
@@ -168,6 +168,7 @@ public class FlockingParticlesAni implements Animation
       mWords.loadPixels();  //lets us work with the pixels currently on screen
       
       //mBirds = new Bird[0];  // Delete current particles.
+      mFlock = new Flock();     // start a new flock
 
       //go through the entire array of pixels, creating a particle for each black pixel
       for (int x = 0; x < width; x++)
