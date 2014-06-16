@@ -39,7 +39,7 @@ public class AnimationResources
 			}
 			else if(aniName.equals("FlockingParticlesAni"))
 			{
-				newAnimation = new FlockingParticlesAni(this, mDisplay);
+				newAnimation = new FlockingParticlesAni(this, mDisplay, mSense);
 			}
 			else
 			{
