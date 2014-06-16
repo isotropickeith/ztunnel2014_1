@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <TunnelCfg>
 
-	
 	<animation id="OrbitAni"
 		       duration="240">
 		<imageFile name="zyngaLogo.png"
@@ -24,16 +23,18 @@
 				   duration="20">
 		</imageFile>
 	</animation>
-	
+
 	<animation id="FlockingParticlesAni"
-		       duration="240">
+		       duration="120">
 		<imageFile name="zyngaLogo.png"
-				   duration="120">
+				   duration="30">
 		</imageFile>
 		<imageFile name="tri.png"
 				   duration="20">
 		</imageFile>
 	</animation>
+	
+	
 
 
 </TunnelCfg>

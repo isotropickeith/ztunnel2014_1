@@ -35,7 +35,7 @@ public class AnimationResources
 			}
 			else if(aniName.equals("OrbitAni"))
 			{
-				newAnimation = new OrbitAni(this, mDisplay);
+				newAnimation = new OrbitAni(this, mDisplay, mSense);
 			}
 			else if(aniName.equals("FlockingParticlesAni"))
 			{
