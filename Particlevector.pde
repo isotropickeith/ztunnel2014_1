@@ -79,9 +79,9 @@ class Particlevector{
       mAcceleration = dir;  // Set to acceleration
 
       // Motion 101!  Velocity changes by acceleration.  Location changes by velocity.
-      //mVelocity.add(mAcceleration);
-      //mVelocity.limit(mTopspeed);
-      //mLocation.add(mVelocity);
+      mVelocity.add(mAcceleration);
+      mVelocity.limit(mTopspeed);
+      mLocation.add(mVelocity);
     }
   }
 
