@@ -25,7 +25,7 @@ int fps = 30;
 
 public class OrbitAni implements Animation
 {
-  static final float sAccel = .05;      //acceleration rate of the particles
+  static final float sAccel = .15;      //acceleration rate of the particles
   static final float sMaxSpeed = 2;     //max speed the particles can move at
   static final int   sNearBoundry = 25;   // # pixels to goal that defines "near"
   static final int   sDefaultImageTime = 60;  // load new image interval in seconds

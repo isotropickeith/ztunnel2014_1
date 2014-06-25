@@ -53,6 +53,8 @@ class Particlevector{
 
     if (!isFree)
     {
+      checkEdge();
+
       mAngle = atan2(mGoal.y - mLocation.y, mGoal.x - mLocation.x);
       mAcceleration.x = mAccel * cos(mAngle);
       mAcceleration.y = mAccel * sin(mAngle);
@@ -60,8 +62,8 @@ class Particlevector{
       if (abs(mLocation.x - mGoal.x) < mVelocity.x * 3 ||
           abs(mLocation.y - mGoal.y) < mVelocity.y * 3)
       {
-        mVelocity.x *= 0.8;
-        mVelocity.y *= 0.8;
+        mVelocity.x *= 0.2;
+        mVelocity.y *= 0.2;
       }
     }
     else
@@ -77,9 +79,9 @@ class Particlevector{
       mAcceleration = dir;  // Set to acceleration
 
       // Motion 101!  Velocity changes by acceleration.  Location changes by velocity.
-      mVelocity.add(mAcceleration);
-      mVelocity.limit(mTopspeed);
-      mLocation.add(mVelocity);
+      //mVelocity.add(mAcceleration);
+      //mVelocity.limit(mTopspeed);
+      //mLocation.add(mVelocity);
     }
   }
 
