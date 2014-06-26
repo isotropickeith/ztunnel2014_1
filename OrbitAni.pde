@@ -21,7 +21,8 @@ float freshy = 0;        // Current y-coordinate
 float step = 0.01;    // Size of each step along the path
 float pct = 0.0;      // Percentage traveled (0.0 to 1.0)
 int fps = 30; 
- 
+float g = 157;
+float grad = 0;
 
 public class OrbitAni implements Animation
 {
@@ -201,6 +202,8 @@ public class OrbitAni implements Animation
       }
     }
 
+
+
     for (int i = 0; i < mParticles.length; i++){
       if (mParticles[i].getY() < 0)
       {
@@ -212,10 +215,32 @@ public class OrbitAni implements Animation
       // Draw the particles
       color particleColor = mFarColor;
 
-      if(!mFree && mParticles[i].isNear(sNearBoundry))
+     /* if(!mFree && mParticles[i].isNear(sNearBoundry))
       {
+        mParticles[i].GetDist();
+        g = mParticles[i].GetDist;
+        //float g = dist(mLocation.x, mLocation.y, mGoal.x, mGoal.y);
+        grad = map(g, 0, 157, 0, 255);
+          color mNearColor = color(grad,0,0);
         particleColor = mNearColor;
-      }
+      }*/
+
+if(!mFree)
+    {
+      float g = mParticles[i].getDist();
+      float grad = map(g, 0, 157, 0, 255);
+      particleColor = color(255-grad,grad,grad);
+    }
+
+    if(mFree)
+    {
+      float g = mParticles[i].getDist();
+      float grad = map(g, 0, 157, 0, 255);
+      particleColor = color(255-grad,255-grad,255-grad);
+    }
+
+
+
       mParticles[i].draw(particleColor);
     }
     // Send the screen image to the Tunnel for display
@@ -268,5 +293,7 @@ public class OrbitAni implements Animation
   {
       return(x + y * width);
   }
+
+
 
 }

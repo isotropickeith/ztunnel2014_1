@@ -85,6 +85,10 @@ class Particlevector{
     }
   }
 
+//public float mParticles[i].GetDist()
+//{
+  //return dist(mLocation.x, mLocation.y, mGoal.x, mGoal.y);
+//}
    //draws the particle on screen
    public void draw(color particleColor)
    {
@@ -134,8 +138,13 @@ class Particlevector{
         mAcceleration.x *= -1;
         mLocation.x = 1;
       }
+
     }
   }
+public float getDist()
+{
+return dist(mLocation.x, mLocation.y, mGoal.x, mGoal.y);
+}
 
 
 }
