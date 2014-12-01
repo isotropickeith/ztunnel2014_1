@@ -141,6 +141,10 @@ class Particlevector{
 
     }
   }
+public float getDist()
+{
+return dist(mLocation.x, mLocation.y, mGoal.x, mGoal.y);
+}
 
   public float getDist()
   {
