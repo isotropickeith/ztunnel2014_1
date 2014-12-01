@@ -218,17 +218,6 @@ public class OrbitAni implements Animation
       // Draw the particles
       color particleColor = mFarColor;
 
-<<<<<<< HEAD
-      //if(!mFree && mParticles[i].isNear(sNearBoundry))
-      //{
-      //  mParticles[i].GetDist();
-      //  g = mParticles[i].GetDist;
-        //float g = dist(mLocation.x, mLocation.y, mGoal.x, mGoal.y);
-      //  grad = map(g, 0, 157, 0, 255);
-      //    color mNearColor = color(grad,0,0);
-      //  particleColor = mNearColor;
-      //}*/
-=======
      /* if(!mFree && mParticles[i].isNear(sNearBoundry))
       {
         mParticles[i].GetDist();
@@ -238,7 +227,6 @@ public class OrbitAni implements Animation
           color mNearColor = color(grad,0,0);
         particleColor = mNearColor;
       }*/
->>>>>>> FETCH_HEAD
 
 if(!mFree)
     {
