@@ -11,6 +11,16 @@
 		</imageFile>
 	</animation>
 -->
+	<animation id=“breathe”
+		       type="MovieAni"
+		       duration=“70">
+		<imageFile name=“breathe.mov"
+				   duration=“70”>
+		</imageFile>
+		<imageFile name="tentacleactive.mov"
+				   duration="20">
+		</imageFile>
+	</animation>
 
 	<animation id="MovieAniLines"
 		       type="MovieAni"
