@@ -11,11 +11,11 @@
 		</imageFile>
 	</animation>
 -->
-	<animation id=“breathe”
+	<animation id="breathe"
 		       type="MovieAni"
-		       duration=“70">
-		<imageFile name=“breathe.mov"
-				   duration=“70”>
+		       duration="70">
+		<imageFile name="breathe.mov"
+				   duration="70">
 		</imageFile>
 		<imageFile name="tentacleactive.mov"
 				   duration="20">
