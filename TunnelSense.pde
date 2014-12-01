@@ -2,6 +2,7 @@ import SimpleOpenNI.*;
 
 public class TunnelSense
 {
+	PApplet mContext;
 	ZTunnel mTunnel;
 	int mNumUsers;
 	SimpleOpenNI mKinect;
@@ -9,9 +10,10 @@ public class TunnelSense
 
 	TunnelSense(PApplet context, ZTunnel tunnel)
 	{
+		mContext = context;
 		mTunnel = tunnel;
 		mNumUsers = 0;
-		mKinect = new SimpleOpenNI(context);
+		mKinect = new SimpleOpenNI(mContext);
 	  if(mKinect.isInit() == false)
 	  {
 	    println("Can't init SimpleOpenNI, maybe the Kinect is not connected!"); 
@@ -61,6 +63,11 @@ public class TunnelSense
 	public boolean isEnabled()
 	{
 		return mEnabled;
+	}
+
+	public PApplet getContext()
+	{
+		return mContext;
 	}
 
 }

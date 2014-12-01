@@ -12,7 +12,30 @@
 	</animation>
 -->
 
-	<animation id="OrbitAni"
+	<animation id="MovieAniLines"
+		       type="MovieAni"
+		       duration="80">
+		<imageFile name="tntaclerest.mov"
+				   duration="40">
+		</imageFile>
+		<imageFile name="tentacleactive.mov"
+				   duration="20">
+		</imageFile>
+	</animation>
+	
+	<animation id="MovieAniCircles"
+		       type="MovieAni"
+		       duration="80">
+		<imageFile name="circlesrest.mov"
+				   duration="60">
+		</imageFile>
+		<imageFile name="circlesrun.mov"
+				   duration="20">
+		</imageFile>
+	</animation>
+	
+	<animation id="OrbitAni0"
+		       type="OrbitAni"
 		       duration="240">
 		<imageFile name="zyngaLogo.png"
 				   duration="120">
@@ -22,7 +45,8 @@
 		</imageFile>
 	</animation>
 	
-	<animation id="ParticleLettersAni"
+	<animation id="ParticleLettersAni0"
+		       type="ParticleLettersAni"
 		       duration="180">
 		<imageFile name="zyngaLogo.png"
 				   duration="60">

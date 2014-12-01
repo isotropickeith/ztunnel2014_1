@@ -5,9 +5,10 @@ public class ParticleLettersAni implements Animation
 	static final int   sNearBoundry = 25;   // # pixels to goal that defines "near"
 	static final int   sDefaultImageTime = 60;  // load new image interval in seconds
 
-	AnimationResources mResources;			// AnimationResources object
-	TunnelDisplay			 mDisplay;				// The display bject on which to paint
-	TunnelSense				 mSense;          // Sensors in the tunnel
+	String             	mName;
+	AnimationResources	mResources;		// AnimationResources object
+	TunnelDisplay		mDisplay;		// The display bject on which to paint
+	TunnelSense			mSense;         // Sensors in the tunnel
 
 	String[] mFilenames;				// Array of Filenames for images to display
 	int[]    mDurations;				// Array of durations for images to display
@@ -30,24 +31,26 @@ public class ParticleLettersAni implements Animation
 
 
 	//constructor
-	ParticleLettersAni(AnimationResources resources,
-										 TunnelDisplay      display,
-										 TunnelSense        sense)
+	ParticleLettersAni(String             name,
+					   AnimationResources resources,
+					   TunnelDisplay      display,
+					   TunnelSense        sense)
 	{
+		mName = name;
 		mResources = resources;
 		mDisplay = display;
 		mSense = sense;
 
-		mFilenames = mResources.getFiles("ParticleLettersAni");
-		mDurations = mResources.getFileDurations("ParticleLettersAni");
+		mFilenames = mResources.getFiles(mName);
+		mDurations = mResources.getFileDurations(mName);
 		if(mFilenames.length == 0)
 		{
-			println("No Resources for ParticleLettersAni - FAIL");
+			println("No Resources for " + mName + " - FAIL");
 			exit();
 		}
 		else
 		{
-		  println("Resource files for ParticleLettersAni :");
+		  println("Resource files for " + mName + " :");
 			for(int i = 0; i < mFilenames.length; i++)
 			{
 				println("    " + mFilenames[i] + " : " + mDurations[i] + " sec.");
@@ -57,7 +60,7 @@ public class ParticleLettersAni implements Animation
 
 	public void start()
 	{
-		println("ParticleLettersAni starting up.");
+		println(mName + " starting up.");
 
 		mCurFileIndex = 0;
 		mWords = loadImage(mFilenames[mCurFileIndex]);
@@ -109,13 +112,13 @@ public class ParticleLettersAni implements Animation
 
 	  if(frameCount % (5 * ZTunnel.sFps) == 0)  // every 5 s.
 	  {
-			println("ParticleLettersAni.update() at frame :" + frameCount);
+			println(mName + ".update() at frame :" + frameCount);
 	  }
 
 	  // See if it's time to set a new image
 	  if(frameCount >= mImageExpirationFrame)  // every 5 s.
 	  {
-			print("ParticleLettersAni setting new image at frame " + frameCount);
+			print(mName + " setting new image at frame " + frameCount);
 			mCurFileIndex = (mCurFileIndex + 1) % mFilenames.length;
 			mWords = loadImage(mFilenames[mCurFileIndex]);
 			println(": " + mFilenames[mCurFileIndex] + " for " + mDurations[mCurFileIndex] + " sec.");
@@ -202,7 +205,7 @@ public class ParticleLettersAni implements Animation
 
 	public String getName()
 	{
-		return "ParticleLettersAni";
+		return mName;
 	}
 
 

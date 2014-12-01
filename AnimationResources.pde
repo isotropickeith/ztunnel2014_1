@@ -8,7 +8,7 @@ public class AnimationResources
 
 	//constructor
 	AnimationResources(TunnelDisplay display,
-										 TunnelSense   sense)
+					   TunnelSense   sense)
 	{
 		mDisplay = display;
 		mSense = sense;
@@ -27,19 +27,24 @@ public class AnimationResources
 		for(int i = 0; i < mAnimationElements.length; i++)
 		{
 			String aniName = mAnimationElements[i].getString("id");
+			String aniType = mAnimationElements[i].getString("type");
 			Animation newAnimation = null;
 			println("DEBUG: Animation " + i + ": " + aniName);
-			if(aniName.equals("ParticleLettersAni"))
+			if(aniType.equals("ParticleLettersAni"))
 			{
-				newAnimation = new ParticleLettersAni(this, mDisplay, mSense);
+				newAnimation = new ParticleLettersAni(aniName, this, mDisplay, mSense);
 			}
-			else if(aniName.equals("OrbitAni"))
+			else if(aniType.equals("OrbitAni"))
 			{
-				newAnimation = new OrbitAni(this, mDisplay, mSense);
+				newAnimation = new OrbitAni(aniName, this, mDisplay, mSense);
 			}
-			else if(aniName.equals("FlockingParticlesAni"))
+			else if(aniType.equals("FlockingParticlesAni"))
 			{
-				newAnimation = new FlockingParticlesAni(this, mDisplay, mSense);
+				newAnimation = new FlockingParticlesAni(aniName, this, mDisplay, mSense);
+			}
+			else if(aniType.equals("MovieAni"))
+			{
+				newAnimation = new MovieAni(aniName, this, mDisplay, mSense);
 			}
 			else
 			{
@@ -65,7 +70,8 @@ public class AnimationResources
 
 		for(int i = 0; i < mAnimationElements.length; i++)
 		{
-			println("DEBUG: Animation " + i + ": " + mAnimationElements[i].getString("id"));
+			println("DEBUG: Animation " + i + ": " + mAnimationElements[i].getString("id") +
+				     " class : " + mAnimationElements[i].getString("type"));
 			if(mAnimationElements[i].getString("id").equals(animationName))
 			{
 				XML[] files = mAnimationElements[i].getChildren("imageFile");

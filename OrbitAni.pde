@@ -21,7 +21,8 @@ float freshy = 0;        // Current y-coordinate
 float step = 0.01;    // Size of each step along the path
 float pct = 0.0;      // Percentage traveled (0.0 to 1.0)
 int fps = 30; 
- 
+float g = 157;
+float grad = 0;
 
 public class OrbitAni implements Animation
 {
@@ -30,6 +31,7 @@ public class OrbitAni implements Animation
   static final int   sNearBoundry = 25;   // # pixels to goal that defines "near"
   static final int   sDefaultImageTime = 60;  // load new image interval in seconds
 
+  String             mName;
   AnimationResources mResources;      // AnimationResources object
   TunnelDisplay      mDisplay;        // The display bject on which to paint
   TunnelSense        mSense;          // Sensors in the tunnel
@@ -55,24 +57,26 @@ public class OrbitAni implements Animation
 
 
   //constructor
-  OrbitAni(AnimationResources resources,
+  OrbitAni(String             name,
+           AnimationResources resources,
            TunnelDisplay      display,
            TunnelSense        sense)
   {
+    mName = name;
     mResources = resources;
     mDisplay = display;
     mSense = sense;
 
-    mFilenames = mResources.getFiles("OrbitAni");
-    mDurations = mResources.getFileDurations("OrbitAni");
+    mFilenames = mResources.getFiles(mName);
+    mDurations = mResources.getFileDurations(mName);
     if(mFilenames.length == 0)
     {
-      println("No Resources for OrbitAni - FAIL");
+      println("No Resources for " + mName + " - FAIL");
       exit();
     }
     else
     {
-      println("Resource files for OrbitAni :");
+      println("Resource files for " + mName + " :");
       for(int i = 0; i < mFilenames.length; i++)
       {
         println("    " + mFilenames[i] + " : " + mDurations[i] + " sec.");
@@ -82,7 +86,7 @@ public class OrbitAni implements Animation
 
   public void start()
   {
-    println("OrbitAni starting up.");
+    println(mName + " starting up.");
 
     mCurFileIndex = 0;
     mWords = loadImage(mFilenames[mCurFileIndex]);
@@ -137,13 +141,13 @@ public class OrbitAni implements Animation
 
     if(frameCount % (5 * ZTunnel.sFps) == 0)  // every 5 s.
     {
-      println("OrbitAni.update() at frame :" + frameCount);
+      println(mName + ".update() at frame :" + frameCount);
     }
 
     // See if it's time to set a new image
     if(frameCount >= mImageExpirationFrame)  // every 5 s.
     {
-      print("OrbitAni setting new image at frame " + frameCount);
+      print(mName + " setting new image at frame " + frameCount);
       mCurFileIndex = (mCurFileIndex + 1) % mFilenames.length;
       mWords = loadImage(mFilenames[mCurFileIndex]);
       println(": " + mFilenames[mCurFileIndex] + " for " + mDurations[mCurFileIndex] + " sec.");
@@ -201,6 +205,8 @@ public class OrbitAni implements Animation
       }
     }
 
+
+
     for (int i = 0; i < mParticles.length; i++){
       if (mParticles[i].getY() < 0)
       {
@@ -212,10 +218,32 @@ public class OrbitAni implements Animation
       // Draw the particles
       color particleColor = mFarColor;
 
-      if(!mFree && mParticles[i].isNear(sNearBoundry))
-      {
-        particleColor = mNearColor;
-      }
+      //if(!mFree && mParticles[i].isNear(sNearBoundry))
+      //{
+      //  mParticles[i].GetDist();
+      //  g = mParticles[i].GetDist;
+        //float g = dist(mLocation.x, mLocation.y, mGoal.x, mGoal.y);
+      //  grad = map(g, 0, 157, 0, 255);
+      //    color mNearColor = color(grad,0,0);
+      //  particleColor = mNearColor;
+      //}*/
+
+if(!mFree)
+    {
+      float g = mParticles[i].getDist();
+      float grad = map(g, 0, 157, 0, 255);
+      particleColor = color(255-grad,grad,grad);
+    }
+
+    if(mFree)
+    {
+      float g = mParticles[i].getDist();
+      float grad = map(g, 0, 157, 0, 255);
+      particleColor = color(255-grad,255-grad,255-grad);
+    }
+
+
+
       mParticles[i].draw(particleColor);
     }
     // Send the screen image to the Tunnel for display
@@ -259,7 +287,7 @@ public class OrbitAni implements Animation
 
   public String getName()
   {
-    return "OrbitAni";
+    return mName;
   }
 
 
@@ -268,5 +296,7 @@ public class OrbitAni implements Animation
   {
       return(x + y * width);
   }
+
+
 
 }

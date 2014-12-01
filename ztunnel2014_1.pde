@@ -1,4 +1,6 @@
 import SimpleOpenNI.*;
+//import codeanticode.gsvideo.*;
+import processing.video.*;
 
 //import SimpleOpenNI.*;
 
@@ -45,3 +47,10 @@ void onVisibleUser(SimpleOpenNI curContext,int userId)
 {
   //println("onVisibleUser - userId: " + userId);
 }
+
+// Called every time a new frame is available to read
+void movieEvent(Movie m)
+{
+  m.read();
+}
+

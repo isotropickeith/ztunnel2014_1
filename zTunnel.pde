@@ -7,7 +7,7 @@ public class ZTunnel
 
 	AnimationResources 	mAnimationResources;
 	AnimationScheduler 	mScheduler;
-	TunnelDisplay 	 		mTunnelDisplay;
+	TunnelDisplay 	 	mTunnelDisplay;
 	TunnelSense         mTunnelSense;
 
 	//ctor
@@ -15,12 +15,12 @@ public class ZTunnel
 	{
 		frameRate(sFps);
 		size(sLedsPerStrip, sNumStripsPerSystem);
-  	noCursor();
+  		noCursor();
 
-  	mTunnelDisplay = new TunnelDisplay();
-  	mTunnelSense = new TunnelSense(context, this);
-  	mAnimationResources = new AnimationResources(mTunnelDisplay, mTunnelSense);
-  	mScheduler = new AnimationScheduler(mAnimationResources);
+	  	mTunnelDisplay = new TunnelDisplay();
+	  	mTunnelSense = new TunnelSense(context, this);
+	  	mAnimationResources = new AnimationResources(mTunnelDisplay, mTunnelSense);
+	  	mScheduler = new AnimationScheduler(mAnimationResources);
 
 		mScheduler.start();
 	}

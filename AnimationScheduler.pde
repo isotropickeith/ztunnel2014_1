@@ -24,6 +24,7 @@ public class AnimationScheduler
 		int aniDuration = mResources.getAnimationDuration(animationName);
 		mAnimationExpires = frameCount + (aniDuration * ZTunnel.sFps);
 		mCurAnimation.start();
+		println("AniSched: " + animationName + " expires " + mAnimationExpires);
 	}
 
 	public void update()

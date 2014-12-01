@@ -25,7 +25,7 @@ public class FlockingParticlesAni implements Animation
   static final int   sNearBoundry = 25;   // # pixels to goal that defines "near"
   static final int   sDefaultImageTime = 60;  // load new image interval in seconds
   
-  
+  String             mName;
   AnimationResources mResources;      // AnimationResources object
   TunnelDisplay      mDisplay;        // The display bject on which to paint
   TunnelSense        mSense;          // Sensors in the tunnel
@@ -52,24 +52,26 @@ public class FlockingParticlesAni implements Animation
 
 
   //constructor
-  FlockingParticlesAni(AnimationResources resources,
+  FlockingParticlesAni(String             name,
+                       AnimationResources resources,
                        TunnelDisplay      display,
                        TunnelSense        sense)
   {
+    mName = name;
     mResources = resources;
     mDisplay = display;
     mSense = sense;
 
-    mFilenames = mResources.getFiles("FlockingParticlesAni");
-    mDurations = mResources.getFileDurations("FlockingParticlesAni");
+    mFilenames = mResources.getFiles(mName);
+    mDurations = mResources.getFileDurations(mName);
     if(mFilenames.length == 0)
     {
-      println("No Resources for FlockingParticlesAni - FAIL");
+      println("No Resources for " + mName + " - FAIL");
       exit();
     }
     else
     {
-      println("Resource files for FlockingParticlesAni :");
+      println("Resource files for " + mName + " :");
       for(int i = 0; i < mFilenames.length; i++)
       {
         println("    " + mFilenames[i] + " : " + mDurations[i] + " sec.");
@@ -82,10 +84,10 @@ public class FlockingParticlesAni implements Animation
     mFlock = new Flock();
     if(mFlock == null)
     {
-      println("FlockingParticlesAni failed to create a Flock - FAIL");
+      println(mName + " failed to create a Flock - FAIL");
       exit();
     }
-    println("FlockingParticlesAni starting up.");
+    println(mName + " starting up.");
 
     mCurFileIndex = 0;
     mWords = loadImage(mFilenames[mCurFileIndex]);
@@ -142,13 +144,13 @@ public class FlockingParticlesAni implements Animation
 
     if(frameCount % (5 * ZTunnel.sFps) == 0)  // every 5 s.
     {
-      println("FlockingParticlesAni.update() at frame :" + frameCount);
+      println(mName + ".update() at frame :" + frameCount);
     }
 
     // See if it's time to set a new image
     if(frameCount >= mImageExpirationFrame)  // every 5 s.
     {
-      print("FlockingParticlesAni setting new image at frame " + frameCount);
+      print(mName + " setting new image at frame " + frameCount);
       mCurFileIndex = (mCurFileIndex + 1) % mFilenames.length;
       mWords = loadImage(mFilenames[mCurFileIndex]);
       println(": " + mFilenames[mCurFileIndex] + " for " + mDurations[mCurFileIndex] + " sec.");
@@ -241,7 +243,7 @@ public class FlockingParticlesAni implements Animation
 
   public String getName()
   {
-    return "FlockingParticlesAni";
+    return mName;
   }
 
 
