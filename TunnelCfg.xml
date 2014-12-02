@@ -13,12 +13,12 @@
 -->
 	<animation id="breathe"
 		       type="MovieAni"
-		       duration="70">
-		<imageFile name="breathe.mov"
-				   duration="70">
+		       duration="52">
+		<imageFile name="zyngabreathe.mov"
+				   duration="28">
 		</imageFile>
-		<imageFile name="tentacleactive.mov"
-				   duration="20">
+		<imageFile name="info.mov"
+				   duration="24">
 		</imageFile>
 	</animation>
 
@@ -32,7 +32,7 @@
 				   duration="20">
 		</imageFile>
 	</animation>
-	
+
 	<animation id="MovieAniCircles"
 		       type="MovieAni"
 		       duration="80">
@@ -43,7 +43,7 @@
 				   duration="20">
 		</imageFile>
 	</animation>
-	
+
 	<animation id="OrbitAni0"
 		       type="OrbitAni"
 		       duration="240">
@@ -54,7 +54,7 @@
 				   duration="20">
 		</imageFile>
 	</animation>
-	
+
 	<animation id="ParticleLettersAni0"
 		       type="ParticleLettersAni"
 		       duration="180">
